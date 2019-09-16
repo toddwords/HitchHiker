@@ -1,0 +1,56 @@
+#chatDiv{
+	position:fixed;
+	top:10px;
+	right:30px;
+	width:300px;
+	z-index: 99999;
+}
+.chatBubble{
+	width:100%;
+	border-radius:20px;
+	background-color: rgba(255,255,0,0.85);
+	min-height: 50px;
+	margin-bottom:5px;
+	border: 2px solid goldenrod;
+	padding:5px 10px;
+}
+#inputDiv{
+	display:none;
+	position: fixed;
+	bottom: 50px;
+	left: 0;
+	right: 0;
+	margin:auto;
+	width: 80%;
+	max-width: 1000px;
+	color: orange;
+	background-color: #444;
+	border: 3px solid #333;
+	font-size:20px;
+	padding:8px 14px;
+	border-radius: 20px;
+	z-index:99999;
+}
+#chatInput {
+	background-color: #444;
+	width:90%;
+	color: orange;
+	padding: 12px;
+	border:none;
+	outline:none;
+	font-size:24px;
+}
+
+#drawing-container{
+	position:absolute;
+	top:0;
+	left:0;
+	z-index:99998;
+}
+
+.multiGif {
+	position:fixed;
+	top:0;
+	left:0;
+	z-index: 99999;
+}

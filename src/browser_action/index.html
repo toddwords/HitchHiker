@@ -1,0 +1,68 @@
+<style>
+div {
+	width:400px;
+	max-height: 400px;
+}
+
+#chatForm {
+	display:none;
+	bottom: 15%;
+}
+#messages {
+	display:none;
+	top: 5%;
+	max-height: 80%
+}
+#messages p {
+	font-size: 20px;
+}
+
+input {
+	width:80%;
+	/*margin-left: 10%;*/
+	height:28px;
+}
+
+#guideTools {
+	display:none;
+}
+</style>
+<h3>Hitchhiker</h3>
+<div id="mainDiv">
+<div id="guideTools">
+	<button id='goDashboard'>Go to Guide Dashboard</button><br>
+	<select id="urlList"></select>
+	<button id="goButton">Go</button><br>
+	<button id="addWebsite">Add Current Website</button>
+	<div id="actions">
+<h4>Actions</h4>
+<div id="changeText">
+<input  /><button >Change Text</button>
+</div>
+<div id="draw">
+	<button>Toggle Drawing</button>
+</div>
+<div id="burn">
+	<button>Burn</button>
+</div>
+<div id="rain">
+	<button>Rain</button>
+</div>
+<div id="getGif">
+<input  /><button >Get Gif</button>
+</div>
+<div id="topSites">
+<strong>Go to top site:</strong><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button>	
+</div>
+</div>
+</div>
+<div id ='messages'></div>
+<div id='chatForm'>
+<input type=text>
+<button>Send</button>
+</div>
+</div>
+<p id="currentRoom"></p>
+<script src="/js/jquery-3.3.1.js"></script>
+<script src='/js/socket.io.js'></script>
+<script src='chat.js'></script>

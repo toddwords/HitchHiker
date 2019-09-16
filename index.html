@@ -1,0 +1,40 @@
+<style>
+div {
+	position:fixed;
+	left:50%;
+	margin-left:-400px;
+	width:800px;
+
+}
+
+#chatForm {
+	bottom: 15%;
+}
+#messages {
+	top: 5%;
+	max-height: 80%
+}
+#messages p {
+	font-size: 20px;
+}
+#messages p:nth-child(even) {
+	background-color: #bbb;
+}
+input {
+	width:80%;
+	/*margin-left: 10%;*/
+	height:28px;
+}
+
+</style>
+<div id ='messages'></div>
+<div id='chatForm'>
+<input type=text>
+<button>Send</button>
+</div>
+<script
+  src="https://code.jquery.com/jquery-2.2.4.min.js"
+  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+  crossorigin="anonymous"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
+<script src='chat.js'></script>
