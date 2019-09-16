@@ -26,12 +26,7 @@ chrome.extension.onMessage.addListener(
         }
         var msg = message.data.msg.trim()
         console.log(msg.slice(0,2))
-        if(guide && msg.slice(0,2) == "x "){
-          msg = msg.slice(2)
-          socket.emit('changeText', {newText:msg})
-          changeText(msg)
-          speakText(msg)
-        }
+
   			addMsg(message.data.username, msg, message.data.color)
   		}
   	}

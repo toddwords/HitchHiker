@@ -100,9 +100,9 @@ $(document).keydown(function(e){
 	}
 	if(guide){
 		if(e.key=="D"){
-			relay({type:"toggleDrawing"})
-			toggleDrawing()
-			console.log("toggling drawing")
+			// relay({type:"toggleDrawing"})
+			// toggleDrawing()
+			// console.log("toggling drawing")
 		}
 		else if(e.which == 39){
 			nextWebsite()
@@ -178,9 +178,13 @@ function toggleChatInput(){
 		$('#chatInput').keydown(function(e){
 			if(e.key == "Enter"){
 				if($('#chatInput').val().length > 0){
-					addChatBubble(USER.username,$('#chatInput').val(), USER.color )
-					chrome.runtime.sendMessage({socketEvent: "newMsg",data:{username:USER.username, color:USER.color, msg:$('#chatInput').val()}})
+					var msg = $('#chatInput').val()
+					console.log(msg)
 					$('#chatInput').val("")
+					if(parseChatInput(msg)){
+						addChatBubble(USER.username,msg, USER.color )
+						chrome.runtime.sendMessage({socketEvent: "newMsg",data:{username:USER.username, color:USER.color, msg:msg}})
+					}
 				}
 			}
 		})
@@ -189,7 +193,32 @@ function toggleChatInput(){
 	}
 
 }
-
+function parseChatInput(msg){
+	if(guide && msg.slice(0,2) == "g "){
+          msg = msg.slice(2)
+          getRandomGif(msg)
+          console.log("gettin gif")
+          return false
+    }
+    if(guide && msg.slice(0,2) == "x "){
+          msg = msg.slice(2)
+          changeText(msg);
+          speakText(msg);
+          return false
+    }
+    return true
+}
+function getRandomGif(tag){
+	var url = 'https://api.giphy.com/v1/stickers/random?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&tag='+tag
+	fetch(url)
+		.then(function(response){return response.json()})
+		.then(function(data){
+			relay({type:"multiGif", src:data.data.image_original_url, remove:true})
+		  })
+		.catch(function(error){
+			return console.log(error)
+		})
+}
 function toggleDrawing(){
 	if($('#drawing-container').length < 1){
 		$('body').append("<div id='drawing-container'></div>")
@@ -201,6 +230,7 @@ function toggleDrawing(){
 	}
 	
 }
+
 function drawingSketch(P5){
 	var mySize,myColor;
 	P5.setup = function(){
