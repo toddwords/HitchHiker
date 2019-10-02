@@ -41,6 +41,15 @@
 	font-size:24px;
 }
 
+.beingEdited {
+	border: 2px solid red;
+	border-radius: 4px;
+	animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-duration: 0.5s;
+  animation-name: editing;
+
+}
 #drawing-container{
 	position:absolute;
 	top:0;
@@ -53,4 +62,93 @@
 	top:0;
 	left:0;
 	z-index: 99999;
+}
+
+.animate {
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+.dance {
+  animation-duration: 1.5s;
+  animation-name: dance;
+  animation-delay:0.25s;
+}
+
+.dance2 {
+  animation-duration: 1.5s;
+  animation-name: dance2;
+  animation-delay:0.25s;
+}
+.fastPulse {
+  animation-duration: 0.25s;
+  animation-name: fastPulse;
+  
+}
+.slowTop {
+  animation-duration: 20s;
+  animation-name: slowTop;
+}
+
+@keyframes dance {
+  from {
+    transform: translate(0px,0px);
+  }
+
+  50% {
+  	transform: translate(200px,40px)
+  }
+
+  to {
+  	transform: translate(400px,-200px)
+  }
+}
+
+@keyframes dance2 {
+  from {
+    transform: translate(0px,0px);
+    transform: skewY(0deg);
+    transform: rotate(0deg);
+  }
+
+  50% {
+  	transform: translate(40px,120px);
+  	transform: skewY(30deg);
+    transform: rotate(40deg);
+  }
+
+  to {
+  	transform: translate(-40px,240px);
+  	transform: skewY(120deg);
+    transform: rotate(270deg);
+  }
+}
+
+@keyframes fastPulse {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+  	transform: scale(1.5);
+  }
+}
+
+@keyframes slowTop {
+	from {
+		transform: translateY(0px);
+	}
+
+	to {
+		transform: translateY(-1000px);
+	}
+}
+
+@keyframes editing {
+	from {
+		border: 4px solid red;
+	}
+
+	to {
+		border: 4px solid orange;
+	}
 }

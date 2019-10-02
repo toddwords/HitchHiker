@@ -111,11 +111,21 @@ function showGuideTools(){
 		relay({type:"changeText", "text": $('#changeText input').val()})
 		$('#changeText input').val("")
 	})
+	$('#edit button').click(function(){
+		relay({type:"graffitiOn"})
+	})
 	$('#burn button').click(function(){
 		relay({type:"multiGif", "src": chrome.extension.getURL("assets/flames.gif")})
 	})
 	$('#rain button').click(function(){
 		relay({type:"multiGif", "src": chrome.extension.getURL("assets/rain.gif"), remove:true})
+	})
+	$('#dance button').click(function(){
+		relay({type:"dance"})
+	})
+	$('#stopAnimation button').click(function(){
+		relay({type:"stopAnimation"})
+		console.log("good click")
 	})
 	$('#getGif button').click(function(){
 		getRandomGif($('#getGif input').val())
@@ -148,7 +158,7 @@ function showChat(){
 	if(USER.role == "guide"){showGuideTools()}
 	$('#chatForm').fadeIn()
 	$('#messages').fadeIn()
-	$('button').click(sendMsg)
+	$('#chatForm button').click(sendMsg)
 	$(document).keyup(function(e){
 		if(e.key == 'Enter'){
 			$(':focus').siblings('button').trigger("click")
@@ -164,11 +174,11 @@ function showChat(){
 }
 
 function sendMsg(){
-	var msg = $('input').val();
+	var msg = $('#chatForm input').val();
 	if(msg.length > 0){
 		toServer('newMsg', {username:USER.username, msg:msg, color:USER.color});
 		addMsg(USER.username, msg, USER.color);
-		$('input').val('')
+		$('#chatForm input').val('')
 	}
 }
 function addMsg(user, msg, color){

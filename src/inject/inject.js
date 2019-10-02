@@ -35,12 +35,14 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 		if(message.type == "click"){
 			console.log("Guide clicked at " +message.x+","+message.y)
 			var $clickEl = $(message.elPath)
+			$('.beingEdited').removeClass('beingEdited')
+			$clickEl.addClass('beingEdited')
 			var offset = $clickEl.offset()
-			var $clickCircle = $("<img id='clickCircle' style='position:absolute; z-index:99999; width:200px; left:"+(offset.left) +"px; top:"+(offset.top)+"px' src='"+chrome.runtime.getURL("assets/clickCircle.gif")+"' />")
+			// var $clickCircle = $("<img id='clickCircle' style='position:absolute; z-index:99999; width:200px; left:"+(offset.left) +"px; top:"+(offset.top)+"px' src='"+chrome.runtime.getURL("assets/clickCircle.gif")+"' />")
 			// var $clickCircle = $("<img id='clickCircle' style='position:absolute; z-index:99999; width:200px; left:"+message.x+"px; top:"+message.y+"px' src='"+chrome.runtime.getURL("assets/clickCircle.gif")+"' />")
-			console.log($clickCircle)
-			$('body').append($clickCircle)
-			$clickCircle.fadeOut(1500, function(){$(this).remove()})
+			// console.log($clickCircle)
+			// $('body').append($clickCircle)
+			// $clickCircle.fadeOut(1500, function(){$(this).remove()})
 			// $('body').append("<img style='position:absolute; left:"+message.x+"; top:"+message.y+"' src='"+chrome.runtime.getURL("assets/clickCircle.gif")+"' />")
 
 			//$('body').append("<img src='"+chrome.extension.getURL("assets/clickCircle.gif")+"' />")
@@ -68,6 +70,15 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 		}
 		if(message.type == "topSites"){
 			window.location = message.url;
+		}
+		if(message.type == "dance"){
+			dance()
+		}
+		if(message.type == "stopAnimation"){
+			stopAnimation()
+		}
+		if(message.type == "graffitiOn"){
+			graffiti = true;
 		}
 		console.log(message)
 })
@@ -152,6 +163,27 @@ function multiGif(src, remove){
 
 	},3000)
 }
+function dance(){
+	$('img, p, h1,h2,h3,h4,h5,h6, a, li').each(function(index){
+		$(this).addClass('animate')
+		switch(index % 4){
+			case 0:
+				$(this).addClass("dance")
+				break
+			case 1:
+				$(this).addClass("dance2")
+				break
+			case 2:
+				$(this).addClass("fastPulse")
+				break
+			case 3:
+				$(this).addClass("slowTop")
+		}
+	})
+}
+function stopAnimation(){
+	$('img, p, h1,h2,h3,h4,h5,h6, a, li').removeClass('animate')
+}
 function nextWebsite(){
 	USER.counter++;
 	if(USER.counter >= urlList.length){USER.counter=0}
@@ -202,8 +234,7 @@ function parseChatInput(msg){
     }
     if(guide && msg.slice(0,2) == "x "){
           msg = msg.slice(2)
-          changeText(msg);
-          speakText(msg);
+          relay({type:"changeText", "text": msg})
           return false
     }
     return true

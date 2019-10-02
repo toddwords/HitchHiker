@@ -1,5 +1,5 @@
 <style>
-div {
+#mainDiv {
 	width:400px;
 	max-height: 400px;
 }
@@ -16,44 +16,87 @@ div {
 #messages p {
 	font-size: 20px;
 }
-
-input {
-	width:80%;
+#urlList {
+	
+}
+input,select {
+	width:75%;
 	/*margin-left: 10%;*/
-	height:28px;
+	/*height:28px;*/
+	margin-left:2px;
 }
 
 #guideTools {
 	display:none;
+
+}
+
+button {
+	margin:2px 2px;
+}
+
+.flexbox {
+	display:flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content:flex-start;
+	align-content: flex-start;
+	width:100%;
+}
+.fullWidth {
+	width:100%;
+}
+
+.group div {
+	display: inline-block;
 }
 </style>
-<h3>Hitchhiker</h3>
+<h2>Hitchhiker</h2>
 <div id="mainDiv">
 <div id="guideTools">
-	<button id='goDashboard'>Go to Guide Dashboard</button><br>
+	<button id='goDashboard'>Go to Guide Dashboard</button><br><br>
+	<div class="flexbox">
+	<div>
 	<select id="urlList"></select>
-	<button id="goButton">Go</button><br>
-	<button id="addWebsite">Add Current Website</button>
+	<button id="goButton">Go</button>
+	</div><br>
+	<div><button id="addWebsite">Add Current Website</button></div>
+	</div>
 	<div id="actions">
-<h4>Actions</h4>
-<div id="changeText">
-<input  /><button >Change Text</button>
-</div>
-<div id="draw">
-	<button>Toggle Drawing</button>
-</div>
-<div id="burn">
-	<button>Burn</button>
-</div>
-<div id="rain">
-	<button>Rain</button>
-</div>
-<div id="getGif">
-<input  /><button >Get Gif</button>
-</div>
-<div id="topSites">
-<strong>Go to top site:</strong><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button>	
-</div>
+		<h4>Actions</h4>
+		<div class='flexbox'>
+			<div id="changeText" class="fullWidth">
+			<input  /><button >Change Text</button>
+			</div>
+			<div id="edit">
+				<button>Toggle Edit Mode</button>
+			</div>
+			<div id="draw">
+				<button>Toggle Drawing</button>
+			</div>
+			<div class="group">
+				<div id="dance">
+					<button>Dancing HTML</button>
+				</div>
+				<div id="stopAnimation">
+					<button>Stop Animation</button>
+				</div>
+			</div>
+			<div class="group">
+				<div id="burn">
+					<button>Burn</button>
+				</div>
+				<div id="rain">
+					<button>Rain</button>
+				</div>
+			</div>
+			<div id="getGif" class="fullWidth">
+			<input  /><button >Get Gif</button>
+			</div>
+			<div id="topSites">
+			<strong>Go to top site:</strong><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button>	
+		</div>
+	</div>
 </div>
 </div>
 <div id ='messages'></div>
