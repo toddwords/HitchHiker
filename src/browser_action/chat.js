@@ -29,12 +29,14 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 
 //on startup
 function init(){
+	// $('#mainDiv,#reset').hide()
+	// $('#currentRoom').html("")
 	if(!USER.username){
 		USER.username = prompt("What username would you like to go by?")
 		chrome.storage.sync.set({username:USER.username})
 	}
 	if(!USER.role){
-		$('#mainDiv').append("<button id='guide'>Guide</button><button id='audience'>Audience</button>")
+		$('#guide,#audience').fadeIn()
 		$('#audience').click(function(){
 			$('#audience,#guide').hide()
 			toServer('getRooms')
@@ -49,20 +51,20 @@ function init(){
 			var newRoom = prompt("Name your room: ")
 			joinRoom(newRoom)
 		})
-	} else {
+	} 
+	else {
 		showChat();
 	}
-	if($('#reset').length < 1){
-		$('body').append("<button id='reset'>Leave Room</button>")
-	}
-	$('#reset').click(reset)
+
+	
 
 
 }
 
 function showRooms(rooms){
+	console.log("showing rooms")
 	if($('#roomList').length < 1)
-		$('body').append("<select id='roomList'></select>")
+		$('#roomManagement').append("<select id='roomList'></select>")
 	$('#roomList').append("<option>Choose an available room:</option>")
 	for(var i in rooms){
 		console.log(rooms[i].sockets)
@@ -115,10 +117,10 @@ function showGuideTools(){
 		relay({type:"graffitiOn"})
 	})
 	$('#burn button').click(function(){
-		relay({type:"multiGif", "src": chrome.extension.getURL("assets/flames.gif")})
+		relay({type:"multiGif", "src": "assets/flames.gif"})
 	})
 	$('#rain button').click(function(){
-		relay({type:"multiGif", "src": chrome.extension.getURL("assets/rain.gif"), remove:true})
+		relay({type:"multiGif", "src": "assets/rain.gif", remove:true})
 	})
 	$('#dance button').click(function(){
 		relay({type:"dance"})
@@ -133,6 +135,11 @@ function showGuideTools(){
 	})
 	$('#topSites button').click(function(){
 		relay({type:"topSites", num: parseInt($(this).text())-1})
+	})
+	$('#sounds button').click(function(){
+		var src = "assets/" + $(this)[0].id + ".mp3"
+		console.log(src)
+		relay({type:"playSound", src: src})
 	})
 }
 
@@ -156,14 +163,14 @@ function getRandomGif(tag){
 }
 function showChat(){
 	if(USER.role == "guide"){showGuideTools()}
-	$('#chatForm').fadeIn()
-	$('#messages').fadeIn()
+	$('#mainDiv').fadeIn()
 	$('#chatForm button').click(sendMsg)
 	$(document).keyup(function(e){
 		if(e.key == 'Enter'){
 			$(':focus').siblings('button').trigger("click")
 		}
 	})
+	$('#reset').fadeIn().click(reset)
 	chrome.runtime.sendMessage({getMessages: true}, function(messages){
 		console.log(messages)
 		for (var i = 0; i < messages.length; i++) {
@@ -191,8 +198,9 @@ function addMsg(user, msg, color){
 }
 function newPage(newURL){
 	$('#messages').append("<p>Going to <em>"+newURL+"</em></p>")
-	chrome.tabs.query({currentWindow: true, active: true}, function (tab) {
-		chrome.tabs.update(tab.id, {url:newURL})
+	chrome.tabs.query({currentWindow: true, index: 0}, function (tabs) {
+		chrome.tabs.highlight({tabs:0})
+		chrome.tabs.update(tabs[0].id, {url:newURL})
 	})
 }
 
@@ -210,8 +218,8 @@ function toServer(eName, obj={}){
 function reset(){
 	USER.role = false;
 	USER.room = false;
-	console.log(USER)
-	init();
+	sync()
+	location.reload()
 }
 
 function sync(){

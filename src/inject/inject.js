@@ -20,6 +20,7 @@ chrome.storage.onChanged.addListener(function(){
 })
 chrome.runtime.sendMessage({isGuide:"ask"}, function(answer){
 	guide = answer;
+	$('title').text("[HitchHiker] "+ $('title').text())
 })
 chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 		if(message.changeText){
@@ -66,7 +67,13 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 			drawingCanvas.newDrawing(message)
 		}
 		if(message.type == "multiGif"){
-			multiGif(message.src, message.remove)
+			var src = (message.src.indexOf("http") >= 0) ? message.src : chrome.runtime.getURL(message.src)
+			multiGif(src, message.remove)
+		}
+		if(message.type == "playSound"){
+			var src = (message.src.indexOf("http") >= 0) ? message.src : chrome.runtime.getURL(message.src)
+			var audio = new Audio(src);
+			audio.play()
 		}
 		if(message.type == "topSites"){
 			window.location = message.url;

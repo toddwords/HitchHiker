@@ -42,7 +42,8 @@ chrome.extension.onMessage.addListener(
   });
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-    if(guide && tab.url.indexOf('http') >= 0){
+    //make sure this is the active tab
+    if(guide && tab.url.indexOf('http') >= 0 && changeInfo.url && tab.active){
       socket.emit('newPage', {url:tab.url})
     }
 });
@@ -56,9 +57,7 @@ socket.on('guideEvent', function(data){
       data.url=sites[data.num].url
     })
   }
-  chrome.tabs.query({active: true}, function(tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, data);
-  });
+  messageToTab(data)
   console.log(data)
 })
 socket.on('toClient', function(data){
@@ -86,17 +85,22 @@ socket.on('changeText', function(data){
 
 //functions
 function changeText(str){
-	chrome.tabs.query({active: true}, function(tabs) {
-  		chrome.tabs.sendMessage(tabs[0].id, {changeText: str});
-	});
-  	//chrome.runtime.sendMessage({speakText: str})
-
-
+	messageToTab({changeText: str})
 }
-
+function messageToTab(data){
+  chrome.tabs.query({currentWindow: true, index:0}, function(tabs) {
+      console.log(tabs)
+      if(!tabs[0].active){chrome.tabs.highlight({tabs:0})}
+      chrome.tabs.sendMessage(tabs[0].id, data);
+  });
+}
 function newPage(newURL){
-	chrome.tabs.query({currentWindow: true, active: true}, function (tab) {
-		chrome.tabs.update(tab.id, {url:newURL})
+	chrome.tabs.query({currentWindow: true, index: 0}, function (tabs) {
+    console.log(tabs)
+    if(!tabs[0].active){chrome.tabs.highlight({tabs:0})}
+		chrome.tabs.update(tabs[0].id, {url:newURL}, function(tab){
+      tab.title = "[HitchHiker] "+tab.title;  
+    })
 	})
 }
 
@@ -106,7 +110,6 @@ function addMsg(user, msg, color){
 
 function speakText(text){
   	chrome.tts.speak(text, {voiceName: "Google UK English Male", rate: 0.75})
-
 }
 
  

@@ -1,15 +1,16 @@
 <style>
 #mainDiv {
+	display: none;
 	width:400px;
-	max-height: 400px;
+	max-height: 600px;
 }
 
 #chatForm {
-	display:none;
+	/*display:none;*/
 	bottom: 15%;
 }
 #messages {
-	display:none;
+	/*display:none;*/
 	top: 5%;
 	max-height: 80%
 }
@@ -25,7 +26,9 @@ input,select {
 	/*height:28px;*/
 	margin-left:2px;
 }
-
+h4 {
+	line-height:0.4em;
+}
 #guideTools {
 	display:none;
 
@@ -50,6 +53,13 @@ button {
 .group div {
 	display: inline-block;
 }
+#roomManagement {
+	width:400px;
+}
+#reset{
+	display:none;
+}
+
 </style>
 <h2>Hitchhiker</h2>
 <div id="mainDiv">
@@ -63,7 +73,7 @@ button {
 	<div><button id="addWebsite">Add Current Website</button></div>
 	</div>
 	<div id="actions">
-		<h4>Actions</h4>
+		<h3>Guide Actions</h3>
 		<div class='flexbox'>
 			<div id="changeText" class="fullWidth">
 			<input  /><button >Change Text</button>
@@ -83,17 +93,26 @@ button {
 				</div>
 			</div>
 			<div class="group">
+				<h4>Gifs</h4>
 				<div id="burn">
 					<button>Burn</button>
 				</div>
 				<div id="rain">
 					<button>Rain</button>
 				</div>
-			</div>
-			<div id="getGif" class="fullWidth">
+				<div id="getGif" class="fullWidth">
 			<input  /><button >Get Gif</button>
 			</div>
+			</div>
+			
+			<div id="sounds" class="group">
+				<h4>Sounds</h4>
+				<button id="airhorn">Airhorn</button>
+				<button id="heartbeat">Heartbeat</button>
+				<button id="sax">Sax</button>
+			</div>
 			<div id="topSites">
+			<h4>Top Sites</h4>
 			<strong>Go to top site:</strong><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button>	
 		</div>
 	</div>
@@ -102,10 +121,16 @@ button {
 <div id ='messages'></div>
 <div id='chatForm'>
 <input type=text>
-<button>Send</button>
+<button>Send</button><br>
 </div>
+
 </div>
-<p id="currentRoom"></p>
+<div id="roomManagement">
+		<button id='guide'>Guide</button><button id='audience'>Audience</button><br>
+		<button id='reset'>Leave Room</button>
+		<p id="currentRoom"></p>
+</div>
+
 <script src="/js/jquery-3.3.1.js"></script>
 <script src='/js/socket.io.js'></script>
 <script src='chat.js'></script>
