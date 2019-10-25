@@ -1,12 +1,37 @@
+<link rel='stylesheet' href="/css/style.css">
+<style>
+	#urlList {
+		width:90%;
+	}
+	#performanceList{
+		width:65%;
+	}
+	#newURL {
+		width:47%;
+	}
 
-<h2>welcome to the guide dashboard</h2>
-<p><strong>Performance: </strong><select id="performanceList"></select><br><button id='newP'>New Performance</button></p>
+</style>
+<h2>Guide Dashboard</h2>
+<p><strong>Current Room: </strong><span id="roomName"></span></p>
+<div class="masonry">
+<div id="performanceDiv" class='masonry-brick'>
+<h3>Performances
+<p><select id="performanceList"></select><button id='newP'>New Performance</button></p>
 <select size="7" id="urlList">
 	
 </select>
+
 <div>
 <input id='newURL' /><button id="addWebsite">Add Website</button><button id="removeWebsite">Remove Website</button>
 </div>
+</div>
+<div id="actions" class='masonry-brick'>
+</div>
+<div id="audience" class='masonry-brick'>
+	<h3>Audience</h3>
+	<select size="7" id="audienceList"></select>
+</div>
 
 <script src='/js/jquery-3.3.1.js'></script>
+<script src='../modules/guideActions.js'></script>
 <script src='dashboard.js'></script>

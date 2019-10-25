@@ -1,0 +1,76 @@
+#mainDiv {
+	display: none;
+	width:400px;
+	/*max-height: 600px;*/
+}
+
+#chatForm {
+	/*display:none;*/
+	/*bottom: 15%;*/
+}
+#messages {
+	/*display:none;*/
+	/*top: 5%;*/
+	max-height: 110px;
+	overflow-y:scroll
+}
+#messages p {
+	font-size: 20px;
+	margin:1px;
+
+}
+#urlList {
+	
+}
+input,select {
+	width:75%;
+	/*margin-left: 10%;*/
+	/*height:28px;*/
+	margin-left:2px;
+}
+h4 {
+	line-height:0.4em;
+}
+#guideTools {
+	display:none;
+
+}
+
+button {
+	margin:2px 2px;
+}
+
+.flexbox {
+	display:flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content:flex-start;
+	align-content: flex-start;
+	width:100%;
+}
+.masonry { 
+  display: flex;
+  flex-flow: column wrap;
+  max-height: 800px;
+  width: 100%;
+}
+.masonry-brick {
+  margin: 0 8px 8px 0;
+  width:400px;
+  background-color:rgba(160,160,200,0.1);
+  border: 2px solid black;
+  padding:10px;
+}
+.fullWidth {
+	width:100%;
+}
+
+.group div {
+	display: inline-block;
+}
+#roomManagement {
+	width:400px;
+}
+#guide,#audience,#reset{
+	display:none;
+}

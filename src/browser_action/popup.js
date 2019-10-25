@@ -65,7 +65,7 @@ function showRooms(rooms){
 	console.log("showing rooms")
 	if($('#roomList').length < 1)
 		$('#roomManagement').append("<select id='roomList'></select>")
-	$('#roomList').append("<option>Choose an available room:</option>")
+	$('#roomList').empty().append("<option>Choose an available room:</option>")
 	for(var i in rooms){
 		console.log(rooms[i].sockets)
 		if(!(i in rooms[i].sockets) && i !== 'null')
@@ -106,40 +106,8 @@ function showGuideTools(){
       chrome.tabs.create({url:chrome.extension.getURL("src/dashboard/index.html")})
 	})
 	$('#addWebsite').click(addWebsite);
-	$('#draw button').click(function(){
-		relay({type:"toggleDrawing"})
-	})
-	$('#changeText button').click(function(){
-		relay({type:"changeText", "text": $('#changeText input').val()})
-		$('#changeText input').val("")
-	})
-	$('#edit button').click(function(){
-		relay({type:"graffitiOn"})
-	})
-	$('#burn button').click(function(){
-		relay({type:"multiGif", "src": "assets/flames.gif"})
-	})
-	$('#rain button').click(function(){
-		relay({type:"multiGif", "src": "assets/rain.gif", remove:true})
-	})
-	$('#dance button').click(function(){
-		relay({type:"dance"})
-	})
-	$('#stopAnimation button').click(function(){
-		relay({type:"stopAnimation"})
-		console.log("good click")
-	})
-	$('#getGif button').click(function(){
-		getRandomGif($('#getGif input').val())
-		// $('#getGif input').val("")
-	})
-	$('#topSites button').click(function(){
-		relay({type:"topSites", num: parseInt($(this).text())-1})
-	})
-	$('#sounds button').click(function(){
-		var src = "assets/" + $(this)[0].id + ".mp3"
-		console.log(src)
-		relay({type:"playSound", src: src})
+	$('#actions').load("../modules/guideActions.html",function(){
+		bindGuideActions();
 	})
 }
 
@@ -150,24 +118,14 @@ function addWebsite(){
 		sync()
 	})
 }
-function getRandomGif(tag){
-	var url = 'https://api.giphy.com/v1/stickers/random?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&tag='+tag
-	fetch(url)
-		.then(function(response){return response.json()})
-		.then(function(data){
-			relay({type:"multiGif", src:data.data.image_original_url, remove:true})
-		  })
-		.catch(function(error){
-			return console.log(error)
-		})
-}
+
 function showChat(){
 	if(USER.role == "guide"){showGuideTools()}
 	$('#mainDiv').fadeIn()
 	$('#chatForm button').click(sendMsg)
 	$(document).keyup(function(e){
 		if(e.key == 'Enter'){
-			$(':focus').siblings('button').trigger("click")
+			$(':focus').siblings('button').first().trigger("click")
 		}
 	})
 	$('#reset').fadeIn().click(reset)
@@ -204,12 +162,7 @@ function newPage(newURL){
 	})
 }
 
-function changeText(str){
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-  		chrome.tabs.sendMessage(tabs[0].id, {changeText: str});
-	});
-  	chrome.runtime.sendMessage({speakText: str})
-}
+
 
 function toServer(eName, obj={}){
 	chrome.runtime.sendMessage({socketEvent: eName, data: obj })
@@ -218,6 +171,7 @@ function toServer(eName, obj={}){
 function reset(){
 	USER.role = false;
 	USER.room = false;
+	toServer("leaveRoom")
 	sync()
 	location.reload()
 }

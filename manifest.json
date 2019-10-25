@@ -27,11 +27,13 @@
     "clipboardRead",
     "clipboardWrite",
     "storage",
-    "topSites"
+    "topSites",
+    "*://*/*"
   ],
   "web_accessible_resources": [
     "assets/*",
-    "js/*"
+    "js/*",
+    "src/user_created/*"
   ],
   "content_scripts": [
     {
@@ -39,7 +41,7 @@
         "<all_urls>"
       ],
       "js": [
-        "js/jquery-3.3.1.js","js/p5.min.js","src/inject/inject.js"
+        "js/jquery-3.3.1.js","js/p5.min.js","src/modules/guideActions.js","src/inject/inject.js"
       ],
       "css": [
         "src/inject/injectStyle.css"

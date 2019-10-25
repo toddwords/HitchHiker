@@ -87,6 +87,10 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 		if(message.type == "graffitiOn"){
 			graffiti = true;
 		}
+		if(message.type == "runFunction"){
+			var fn = window[message.fn]
+			if (typeof fn === "function") fn.apply(null, message.params);
+		}
 		console.log(message)
 })
 $('*').click(function(e){
@@ -233,6 +237,7 @@ function toggleChatInput(){
 
 }
 function parseChatInput(msg){
+	msg = msg.trim()
 	if(guide && msg.slice(0,2) == "g "){
           msg = msg.slice(2)
           getRandomGif(msg)
@@ -244,19 +249,27 @@ function parseChatInput(msg){
           relay({type:"changeText", "text": msg})
           return false
     }
+    if(guide && msg.slice(0,2) == "f "){
+    	msg = msg.slice(2)
+    	runFunction(msg)
+    	return false
+    }
+    if(guide && msg.slice(0,2) == "s "){
+    	console.log(msg.slice(2))
+    	getSound(msg.slice(2))
+    	return false
+    }
+    if(guide && msg.slice(0,2) == "l "){
+    	getSound(msg.slice(2),true)
+    	return false
+    }
+    if(guide && msg.slice(0,2) == "sx"){
+    	relay({type:"stopAudio"})
+    	return false
+    }
     return true
 }
-function getRandomGif(tag){
-	var url = 'https://api.giphy.com/v1/stickers/random?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&tag='+tag
-	fetch(url)
-		.then(function(response){return response.json()})
-		.then(function(data){
-			relay({type:"multiGif", src:data.data.image_original_url, remove:true})
-		  })
-		.catch(function(error){
-			return console.log(error)
-		})
-}
+
 function toggleDrawing(){
 	if($('#drawing-container').length < 1){
 		$('body').append("<div id='drawing-container'></div>")
