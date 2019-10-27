@@ -13,11 +13,20 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 	if(message.newMsg){
 		addMsg(message.newMsg.username, message.newMsg.msg, message.newMsg.color)
 	}
-	if(message.rooms){
+	if(message.rooms && USER.role == "audience" && !USER.room){
 		showRooms(message.rooms)
 	}
 	if(message.users){
 		showUsers(message.users)
+	}
+	if(message.error){
+		showError(message.error)
+	}
+	if(message.joinRoomSuccess){
+		joinRoom(message.room)
+	}
+	if(message.disconnected){
+		reset()
 	}
 })
 
@@ -44,12 +53,10 @@ function init(){
 			chrome.storage.sync.set({role:USER.role})
 		})
 		$('#guide').click(function(){
-			$('#audience,#guide').hide()
 			USER.role = "guide"
-			chrome.runtime.sendMessage({guide:true})
 			chrome.storage.sync.set({role:USER.role})
 			var newRoom = prompt("Name your room: ")
-			joinRoom(newRoom)
+			attemptJoinRoom(newRoom)
 		})
 	} 
 	else {
@@ -74,7 +81,7 @@ function showRooms(rooms){
 	$('#roomList').change(function(){
 		if(this.selectedIndex > 0){
 			//audience joins room
-			joinRoom(this.options[this.selectedIndex].value)
+			attemptJoinRoom(this.options[this.selectedIndex].value)
 		}
 	})
 }
@@ -84,9 +91,13 @@ function showUsers(users){
 		console.log(users[i])
 	}
 }
+function attemptJoinRoom(room){
+	toServer("joinRoom", {room:room, username:USER.username, role:USER.role})
+	
+}
 function joinRoom(room){
+	$('#audience,#guide').hide()
 	$('#roomList').fadeOut()
-	toServer("joinRoom", {room:room, username:USER.username})
 	USER.room = room;
 	chrome.storage.sync.set({room:room})
 	showChat()
@@ -149,11 +160,19 @@ function sendMsg(){
 function addMsg(user, msg, color){
 	var colorString = "rgba("+color[0]+","+color[1]+","+color[2]+",0.85)"
 	$('#messages').append("<p style='background-color:"+colorString+"'><strong>"+user+": </strong>"+msg+"</p>")
+	$('#messages p').last()[0].scrollIntoView({behavior:"smooth",block:"end"})
 	if(user == "The Guide"){
   		chrome.runtime.sendMessage({speakText: msg})
 	}
 
 }
+
+function showError(error){
+	$('#errorMsg').text(error).fadeIn(400,function(){
+		setTimeout(function(){$('#errorMsg').fadeOut()},3000)
+	})
+}
+
 function newPage(newURL){
 	$('#messages').append("<p>Going to <em>"+newURL+"</em></p>")
 	chrome.tabs.query({currentWindow: true, index: 0}, function (tabs) {
@@ -171,7 +190,7 @@ function toServer(eName, obj={}){
 function reset(){
 	USER.role = false;
 	USER.room = false;
-	toServer("leaveRoom")
+	toServer("leaveRoom", USER)
 	sync()
 	location.reload()
 }

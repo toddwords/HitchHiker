@@ -1,11 +1,10 @@
-var guide = false;
 var USER;
 var audioTracks = [];
 chrome.storage.sync.get(function(syncData){
       if(!syncData.id){
-        chrome.storage.sync.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[]}}, counter:-1, currentPerformance:"First Performance", "username":false},function(){console.log("initialized")})
+        chrome.storage.sync.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
       }
-      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75]})
+      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[]})
       USER = syncData;
     })
 chrome.storage.onChanged.addListener(function(){
@@ -34,11 +33,8 @@ chrome.extension.onMessage.addListener(
   	if(message.getMessages){
   		sendResponse(messages)
   	}
-    if(message.guide == true){
-      guide = true;
-    }
     if(message.isGuide){
-      sendResponse(guide)
+      sendResponse(USER.role == "guide")
     }
 
   });
@@ -46,7 +42,7 @@ chrome.extension.onMessage.addListener(
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     //make sure this is the active tab
     console.log(tab)
-    if(guide && tab.url.indexOf('http') >= 0 && changeInfo.url && tab.active){
+    if(USER.role == "guide" && tab.url.indexOf('http') >= 0 && changeInfo.url && tab.active){
       socket.emit('newPage', {url:tab.url})
     }
     if(tab.url.indexOf('http') >= 0 && changeInfo.status == 'complete' && tab.active){
@@ -56,10 +52,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 });
 // chrome.windows.create({url:"https://valley-gastonia.glitch.me/", type:"popup", state:"minimized"})
 var socket = io('https://hitchhiker.glitch.me/')
-var messages = [];
+
 socket.on('guideEvent', function(data){
   if(data.type == "topSites"){
-    if(guide){return false};
+    if(USER.role == "guide"){return false};
     chrome.topSites.get(function(sites){
       data.url=sites[data.num].url
     })
@@ -103,6 +99,9 @@ socket.on('changeText', function(data){
 	speakText(data.newText)
 })
 
+socket.on('disconnect', function(){
+  chrome.runtime.sendMessage({disconnected:true})
+})
 
 //functions
 function changeText(str){
@@ -126,7 +125,7 @@ function newPage(newURL){
 }
 
 function addMsg(user, msg, color){
-	messages.push({username:user, message:msg, color:color})
+	USER.messages.push({username:user, message:msg, color:color})
 }
 
 function speakText(text){

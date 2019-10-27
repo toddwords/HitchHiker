@@ -35,7 +35,17 @@ h4 {
 	display:none;
 
 }
+.actionHeader{
+	width:100%;
+}
+.actionHeader:hover {
+	color:purple;
+	cursor:hand;
 
+}
+.actionDiv {
+	/*display:none;*/
+}
 button {
 	margin:2px 2px;
 }
@@ -72,5 +82,10 @@ button {
 	width:400px;
 }
 #guide,#audience,#reset{
+	display:none;
+}
+#errorMsg {
+	background-color: pink;
+	color: red;
 	display:none;
 }

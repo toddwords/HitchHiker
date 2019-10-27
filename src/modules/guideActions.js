@@ -1,5 +1,9 @@
 function bindGuideActions(){
 	console.log("loaded")
+	$('.actionHeader').click(function(){
+		$(this).next('.actionDiv').first().slideToggle()
+	})
+
 	$('#draw button').click(function(){
 		relay({type:"toggleDrawing"})
 	})
