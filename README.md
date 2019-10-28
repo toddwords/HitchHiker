@@ -14,7 +14,7 @@ To install:
 - If you are going to be in the audience, click audience then select the room your guide has created.
 
 To test:
-- Install a [second version of chrome](https://www.google.com/chrome/beta/)
+- Install a [second version of chrome](https://www.google.com/chrome/canary/)
 - Follow the steps above for the new version of chrome
 - Start a hitchhiker session with one browser as guide and one as audience
 - Test out actions on the guide side and see the results on the audience side
