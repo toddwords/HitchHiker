@@ -1,3 +1,5 @@
+# HitchHiker Workshop at CultureHub
+
 ## Day 1 (Monday 10/28)
 - Introductions
 - Install and try out [HitchHiker](https://github.com/toddwords/HitchHiker)
