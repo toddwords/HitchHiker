@@ -91,6 +91,9 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 			var fn = window[message.fn]
 			if (typeof fn === "function") fn.apply(null, message.params);
 		}
+		if(message.type){
+			chrome.runtime.sendMessage({socketEvent:"status", data:{msg:message.type + " running"}})
+		}
 		console.log(message)
 })
 $('*').click(function(e){

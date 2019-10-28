@@ -10,14 +10,11 @@ chrome.storage.onChanged.addListener(function(){
 	})
 })
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
-	if(message.newMsg){
-		addMsg(message.newMsg.username, message.newMsg.msg, message.newMsg.color)
-	}
 	if(message.rooms && USER.role == "audience" && !USER.room){
 		showRooms(message.rooms)
 	}
 	if(message.users){
-		showUsers(message.users)
+		// showUsers(message.users)
 	}
 	if(message.error){
 		showError(message.error)
@@ -102,24 +99,15 @@ function joinRoom(room){
 	chrome.storage.sync.set({room:room})
 	showChat()
 	$('#currentRoom').html("<strong>Currently <em>"+USER.role+"</em> in <em>"+USER.room+"</em>")
+	chrome.runtime.sendMessage({roomJoined:true})
 }
 function showGuideTools(){
 	$('#guideTools').fadeIn()
-	for (var i = 0; i < USER.performances[USER.currentPerformance].urlList.length; i++) {
-		$('#urlList').append("<option>"+USER.performances[USER.currentPerformance].urlList[i]+"</option>")
-	}
-	$('#goButton').click(function(){
-		newPage($('#urlList').val())
-		USER.counter = $('#urlList')[0].selectedIndex;
-		sync()
-	})
-	$('#goDashboard').click(function(){
-      chrome.tabs.create({url:chrome.extension.getURL("src/dashboard/index.html")})
-	})
-	$('#addWebsite').click(addWebsite);
+	
 	$('#actions').load("../modules/guideActions.html",function(){
 		bindGuideActions();
 	})
+
 }
 
 function addWebsite(){
@@ -131,41 +119,17 @@ function addWebsite(){
 }
 
 function showChat(){
+	$('#chat').load("../modules/chat.html",function(){
+		chatInit()
+	})
 	if(USER.role == "guide"){showGuideTools()}
+	
 	$('#mainDiv').fadeIn()
-	$('#chatForm button').click(sendMsg)
-	$(document).keyup(function(e){
-		if(e.key == 'Enter'){
-			$(':focus').siblings('button').first().trigger("click")
-		}
-	})
+
 	$('#reset').fadeIn().click(reset)
-	chrome.runtime.sendMessage({getMessages: true}, function(messages){
-		console.log(messages)
-		for (var i = 0; i < messages.length; i++) {
-			addMsg(messages[i].username, messages[i].message, messages[i].color)
-		}
-	})
-	$('input').focus()
+	
 }
 
-function sendMsg(){
-	var msg = $('#chatForm input').val();
-	if(msg.length > 0){
-		toServer('newMsg', {username:USER.username, msg:msg, color:USER.color});
-		addMsg(USER.username, msg, USER.color);
-		$('#chatForm input').val('')
-	}
-}
-function addMsg(user, msg, color){
-	var colorString = "rgba("+color[0]+","+color[1]+","+color[2]+",0.85)"
-	$('#messages').append("<p style='background-color:"+colorString+"'><strong>"+user+": </strong>"+msg+"</p>")
-	$('#messages p').last()[0].scrollIntoView({behavior:"smooth",block:"end"})
-	if(user == "The Guide"){
-  		chrome.runtime.sendMessage({speakText: msg})
-	}
-
-}
 
 function showError(error){
 	$('#errorMsg').text(error).fadeIn(400,function(){
@@ -173,19 +137,13 @@ function showError(error){
 	})
 }
 
-function newPage(newURL){
-	$('#messages').append("<p>Going to <em>"+newURL+"</em></p>")
-	chrome.tabs.query({currentWindow: true, index: 0}, function (tabs) {
-		chrome.tabs.highlight({tabs:0})
-		chrome.tabs.update(tabs[0].id, {url:newURL})
-	})
-}
-
-
 
 function toServer(eName, obj={}){
 	chrome.runtime.sendMessage({socketEvent: eName, data: obj })
 }
+
+
+
 
 function reset(){
 	USER.role = false;

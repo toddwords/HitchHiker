@@ -38,7 +38,7 @@
   "content_scripts": [
     {
       "matches": [
-        "<all_urls>"
+        "https://*/*","http://*/*"
       ],
       "js": [
         "js/jquery-3.3.1.js","js/p5.min.js","src/modules/guideActions.js","src/inject/inject.js"

@@ -1,29 +1,20 @@
 <link rel='stylesheet' href="/css/style.css">
 <h2>Hitchhiker</h2>
 <div id="mainDiv">
-<div id="guideTools">
-	<button id='goDashboard'>Go to Guide Dashboard</button><br><br>
-	<div class="flexbox">
-	<div>
-	<select id="urlList"></select>
-	<button id="goButton">Go</button>
-	</div><br>
-	<div><button id="addWebsite">Add Current Website</button></div>
-	</div>
-	<div id="actions">
-		
-	
-	</div>
-</div>
-<h4>Chat</h4>
-<div id ='messages'></div>
-<div id='chatForm'>
-<input type=text>
-<button>Send</button><br>
-</div>
+<div class="masonry-brick" id="chat">
 
 </div>
-<div  id="roomManagement">
+<div id="guideTools">
+	
+<div class="masonry-brick" id="actions">
+	
+
+</div>
+</div>
+
+
+</div>
+<div class="masonry-brick"  id="roomManagement">
 		<button id='guide'>Guide</button><button id='audience'>Audience</button><br>
 		<button id='reset'>Leave Room</button>
 		<p id="errorMsg"></p>
@@ -33,4 +24,5 @@
 <script src="/js/jquery-3.3.1.js"></script>
 <script src='/js/socket.io.js'></script>
 <script src='../modules/guideActions.js'></script>
+<script src='../modules/chat.js'></script>
 <script src='popup.js'></script>

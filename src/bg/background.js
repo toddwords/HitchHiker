@@ -4,7 +4,7 @@ chrome.storage.sync.get(function(syncData){
       if(!syncData.id){
         chrome.storage.sync.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
       }
-      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[]})
+      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false})
       USER = syncData;
     })
 chrome.storage.onChanged.addListener(function(){
@@ -19,37 +19,47 @@ chrome.extension.onMessage.addListener(
   	}
   	if(message.socketEvent){
   		socket.emit(message.socketEvent, message.data)
-  		if(message.socketEvent == 'newMsg'){
-        if(!message.data.username || !message.data.color){
-          message.data.username = USER.username;
-          message.data.color = USER.color;
-        }
-        var msg = message.data.msg.trim()
-        console.log(msg.slice(0,2))
+  		// if(message.socketEvent == 'newMsg'){
+    //     if(!message.data.username || !message.data.color){
+    //       message.data.username = USER.username;
+    //       message.data.color = USER.color;
+    //     }
+    //     var msg = message.data.msg.trim()
 
-  			addMsg(message.data.username, msg, message.data.color)
-  		}
+  		// 	addMsg(message.data.username, msg, message.data.color)
+  		// }
   	}
   	if(message.getMessages){
-  		sendResponse(messages)
+  		sendResponse(USER.messages)
   	}
     if(message.isGuide){
       sendResponse(USER.role == "guide")
     }
-
+    if(message.roomJoined){
+      onJoinRoom()
+    }
+    if(message.newPageClient){
+      newPage(message.newPageClient)
+    }
   });
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     //make sure this is the active tab
-    console.log(tab)
-    if(USER.role == "guide" && tab.url.indexOf('http') >= 0 && changeInfo.url && tab.active){
+    if(USER.role == "guide" && tab.url.indexOf('http') >= 0 && changeInfo.url && tabId == USER.performanceTab){
       socket.emit('newPage', {url:tab.url})
+      tab.title = "[HitchHiker] "+tab.title;
     }
     if(tab.url.indexOf('http') >= 0 && changeInfo.status == 'complete' && tab.active){
       console.log(chrome.runtime.getURL('src/user_created/'+USER.room+'.js'))
-      chrome.tabs.executeScript(null,{file:'src/user_created/'+USER.room+'.js'})
+      chrome.tabs.executeScript(USER.performanceTab,{file:'src/user_created/'+USER.room+'.js'})
     }
 });
+
+chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
+  if(tabId == USER.performanceTab){
+    createNewPerformanceTab();
+  }
+})
 // chrome.windows.create({url:"https://valley-gastonia.glitch.me/", type:"popup", state:"minimized"})
 var socket = io('https://hitchhiker.glitch.me/')
 
@@ -66,6 +76,7 @@ socket.on('guideEvent', function(data){
     audio.loop = data.loop;
     audioTracks.push(audio)
     audioTracks[audioTracks.length-1].play()
+    socket.emit("status", {msg:"playSound"})
     return false;
   }
   if(data.type == "stopAudio"){
@@ -78,7 +89,10 @@ socket.on('guideEvent', function(data){
   console.log(data)
 })
 socket.on('toClient', function(data){
-  console.log(data)
+  chrome.runtime.sendMessage(data)
+})
+socket.on('status', function(data){
+  console.log("status received")
   chrome.runtime.sendMessage(data)
 })
 socket.on('newPage', function(data){
@@ -88,9 +102,7 @@ socket.on('newMsg', function(data){
 	addMsg(data.username, data.msg, data.color)
 	//speakText(data.msg)
 	chrome.runtime.sendMessage({newMsg: data})
-  chrome.tabs.query({active: true}, function(tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, {newMsg: data});
-  });
+  chrome.tabs.sendMessage(USER.performanceTab, {newMsg: data});
 
 })
 socket.on('changeText', function(data){
@@ -108,28 +120,57 @@ function changeText(str){
 	messageToTab({changeText: str})
 }
 function messageToTab(data){
-  chrome.tabs.query({currentWindow: true, index:0}, function(tabs) {
-      console.log(tabs)
-      if(!tabs[0].active){chrome.tabs.highlight({tabs:0})}
-      chrome.tabs.sendMessage(tabs[0].id, data);
-  });
+    chrome.tabs.sendMessage(USER.performanceTab, data);  
 }
 function newPage(newURL){
-	chrome.tabs.query({currentWindow: true, index: 0}, function (tabs) {
-    console.log(tabs)
-    if(!tabs[0].active){chrome.tabs.highlight({tabs:0})}
-		chrome.tabs.update(tabs[0].id, {url:newURL}, function(tab){
-      tab.title = "[HitchHiker] "+tab.title;  
-    })
-	})
+  if(!USER.performanceTab){
+    createNewPerformanceTab(updatePage)
+  } else {
+    updatePage(newURL)
+  }	
 }
-
+function updatePage(newURL){
+  chrome.tabs.update(USER.performanceTab, {url:newURL, active:true}, function(tab){
+      tab.title = "[HitchHiker] "+tab.title;
+      socket.emit("status", {msg:"currently on "+tab.url})  
+  })
+  var data = {username:"server",msg:"Going to " + newURL,color:[127,127,127]}
+  addMsg(data.username, data.msg, data.color)
+  chrome.runtime.sendMessage({newMsg: data})
+}
+function createNewPerformanceTab(callback=function(){}){
+  chrome.tabs.update({url:"https://hitchhiker.glitch.me/start.html", active:true},function(tab){
+    USER.performanceTab = tab.id;
+    sync()
+    console.log("performance tab created with id " + USER.performanceTab)
+    chrome.tabs.move(USER.performanceTab, {index:0})
+    callback()
+  })
+}
 function addMsg(user, msg, color){
 	USER.messages.push({username:user, message:msg, color:color})
+  sync()
 }
 
 function speakText(text){
   	chrome.tts.speak(text, {voiceName: "Google UK English Male", rate: 0.75})
 }
 
- 
+ function openNewWindow(newUrl, left, top, time){
+  var newTimeout = setTimeout(function(){
+    if(newUrl.slice(0,4) != "http"){newUrl = "http://"+newUrl}
+    chrome.windows.create({ url: newUrl, left:left, top:top, width:500, height:400 });
+  }, time * 1000)
+  timeouts.push(newTimeout)
+}
+
+function onJoinRoom(){
+  createNewPerformanceTab(function(){
+    if(USER.role == "guide")
+      chrome.windows.create({type:"popup",url:chrome.extension.getURL("src/dashboard/index.html"), width:960, height:1080})
+  })
+}
+
+function sync(){
+  chrome.storage.sync.set(USER)
+}

@@ -1,6 +1,6 @@
 <link rel='stylesheet' href="/css/style.css">
 <style>
-	#urlList {
+	#performanceURLs {
 		width:90%;
 	}
 	#performanceList{
@@ -9,15 +9,17 @@
 	#newURL {
 		width:47%;
 	}
-
+	#addWebsite, #goDashboard {
+		display:none;
+	}
 </style>
 <h2>Guide Dashboard</h2>
 <p><strong>Current Room: </strong><span id="roomName"></span></p>
 <div class="masonry">
 <div id="performanceDiv" class='masonry-brick'>
-<h3>Performances
+<h3>Performances</h3>
 <p><select id="performanceList"></select><button id='newP'>New Performance</button></p>
-<select size="7" id="urlList">
+<select size="7" id="performanceURLs">
 	
 </select>
 
@@ -31,7 +33,9 @@
 	<h3>Audience</h3>
 	<select size="7" id="audienceList"></select>
 </div>
+<div id="chat" class='masonry-brick'></div>
 
 <script src='/js/jquery-3.3.1.js'></script>
 <script src='../modules/guideActions.js'></script>
+<script src='../modules/chat.js'></script>
 <script src='dashboard.js'></script>

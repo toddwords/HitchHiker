@@ -1,7 +1,19 @@
 function bindGuideActions(){
 	console.log("loaded")
+	$('#goDashboard').click(function(){
+      chrome.windows.create({type:"popup",url:chrome.extension.getURL("src/dashboard/index.html"), width:960, height:1080})
+	})
+	$('#addWebsite').click(addWebsite);
 	$('.actionHeader').click(function(){
 		$(this).next('.actionDiv').first().slideToggle()
+	})
+	for (var i = 0; i < USER.performances[USER.currentPerformance].urlList.length; i++) {
+		$('#urlList').append("<option>"+USER.performances[USER.currentPerformance].urlList[i]+"</option>")
+	}
+	$('#goButton').click(function(){
+		newPage($('#urlList').val())
+		USER.counter = $('#urlList')[0].selectedIndex;
+		sync()
 	})
 
 	$('#draw button').click(function(){
@@ -79,9 +91,8 @@ function getSound(query,loop=false,random=false){
 		})
 }
 function changeText(str){
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-  		chrome.tabs.sendMessage(tabs[0].id, {changeText: str});
-	});
+  	chrome.tabs.sendMessage(USER.performanceTab, {changeText: str});
+
   	chrome.runtime.sendMessage({speakText: str})
 }
 
@@ -94,4 +105,15 @@ function runFunction(msg){
 	var fn = msg.slice(0,spaceIndex);
     var fnparams = [msg.slice(spaceIndex)]
     relay({type:"runFunction", fn: fn, params: fnparams})
+}
+function newPage(newURL){
+	chrome.runtime.sendMessage({newPageClient:newURL})
+}
+
+function addWebsite(){
+	chrome.tabs.query({currentWindow: true, active: true}, function (tabs) {
+		USER.performances[USER.currentPerformance].urlList.push(tabs[0].url)
+		$('#urlList').append("<option>"+tabs[0].url+"</option>")
+		sync()
+	})
 }
