@@ -39,6 +39,7 @@ function init(){
 	// $('#currentRoom').html("")
 	if(!USER.username){
 		USER.username = prompt("What username would you like to go by?")
+		USER.username = sanitize(USER.username)
 		chrome.storage.sync.set({username:USER.username})
 	}
 	if(!USER.role){
@@ -47,11 +48,13 @@ function init(){
 			$('#audience,#guide').hide()
 			toServer('getRooms')
 			USER.role = "audience"
-			chrome.storage.sync.set({role:USER.role})
+			USER.messages = []
+			sync()
 		})
 		$('#guide').click(function(){
+			USER.messages = []
 			USER.role = "guide"
-			chrome.storage.sync.set({role:USER.role})
+			sync()
 			var newRoom = prompt("Name your room: ")
 			attemptJoinRoom(newRoom)
 		})
@@ -110,13 +113,7 @@ function showGuideTools(){
 
 }
 
-function addWebsite(){
-	chrome.tabs.query({currentWindow: true, active: true}, function (tabs) {
-		USER.performances[USER.currentPerformance].urlList.push(tabs[0].url)
-		$('#urlList').append("<option>"+tabs[0].url+"</option>")
-		sync()
-	})
-}
+
 
 function showChat(){
 	$('#chat').load("../modules/chat.html",function(){
@@ -159,4 +156,17 @@ function sync(){
 
 function relay(obj){
 	chrome.runtime.sendMessage({socketEvent: "guideEvent", data: obj })
+}
+
+function sanitize(string) {
+  const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      "/": '&#x2F;',
+  };
+  const reg = /[&<>"'/]/ig;
+  return string.replace(reg, (match)=>(map[match]));
 }
