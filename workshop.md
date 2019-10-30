@@ -20,6 +20,7 @@
 - Workshopping and trying performances in progress
 - **By Thursday 6pm**
   - Send Todd the .js file you want to include for your performance. (Note: you can't send .js files through email, you can send it as a text file or paste it into a pastebin like [ControlC](https://controlc.com/) and send the link to Todd. (Be sure to include the name!))
+  - Send email addresses of anyone you're inviting to the show on Friday to Mattie at mattie@culturehub.org
 
 
 ## Day 3 (Friday 11/1)
