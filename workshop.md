@@ -15,8 +15,12 @@
     - Some of the code you will use, or feature requests for Todd ^^
 
 ## Day 2 (Wednesday 10/30)
-- Workshopping and trying performances in progress
+- Making page specific alterations
 - Building and testing new features
+- Workshopping and trying performances in progress
+- **By Thursday 6pm**
+  - Send Todd the .js file you want to include for your performance. (Note: you can't send .js files through email, you can send it as a text file or paste it into a pastebin like [ControlC](https://controlc.com/) and send the link to Todd
+
 
 ## Day 3 (Friday 11/1)
 - Live performance at CultureHub
