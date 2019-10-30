@@ -75,7 +75,7 @@ function showRooms(rooms){
 	$('#roomList').empty().append("<option>Choose an available room:</option>")
 	for(var i in rooms){
 		console.log(rooms[i].sockets)
-		if(!(i in rooms[i].sockets) && i !== 'null')
+		if(!(i in rooms[i].sockets) && i !== 'null' && i !== "lobby")
 			$('#roomList').append("<option>"+i+"</option>")
 	}
 	$('#roomList').change(function(){
