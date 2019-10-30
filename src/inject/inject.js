@@ -228,7 +228,8 @@ function toggleChatInput(){
 					console.log(msg)
 					$('#chatInput').val("")
 					if(parseChatInput(msg)){
-						addChatBubble(USER.username,msg, USER.color )
+						msg = sanitize(msg)
+						// addChatBubble(USER.username,msg, USER.color )
 						chrome.runtime.sendMessage({socketEvent: "newMsg",data:{username:USER.username, color:USER.color, msg:msg}})
 					}
 				}
@@ -347,3 +348,16 @@ jQuery.fn.getPath = function () {
 
     return path;
 };
+
+function sanitize(string) {
+  const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      "/": '&#x2F;',
+  };
+  const reg = /[&<>"'/]/ig;
+  return string.replace(reg, (match)=>(map[match]));
+}
