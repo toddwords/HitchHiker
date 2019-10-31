@@ -4,6 +4,7 @@ var currentText = "";
 var originalText = "";
 var elType = "";
 var elPath;
+var contentChanges = [];
 var graffiti = false;
 var USER;
 var drawingCanvas;
@@ -104,6 +105,7 @@ $('*').click(function(e){
 			allowClick = false;
 			currentEl = e.target
 			currentText = ""
+			contentChanges = [];
 			originalText = e.target.textContent
 			elType = e.target.localName
 			elPath = $(currentEl).getPath()
@@ -137,17 +139,29 @@ $(document).keydown(function(e){
 		console.log(currentEl)
 		e.preventDefault()
 		if(e.ctrlKey && e.which == 86){
+			contentChanges.push($(currentEl).text())
 			navigator.clipboard.readText().then(clipText => currentEl.innerText = clipText);
+		}
+		else if(currentEl && e.ctrlKey && e.which == 90){
+			if(contentChanges.length > 0){
+				currentText = contentChanges.pop()
+				$(currentEl).text(currentText);
+				relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})
+			}
+
+
 		}
 		else if(e.ctrlKey){
 			return true
 		}
 		else if(currentEl && e.key.length == 1){
+			contentChanges.push($(currentEl).text())
 			currentText += e.key
 			$(currentEl).text(currentText);
 			relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})
 		}
-		else if(e.which == 8){
+		else if(currentEl && e.which == 8){
+			contentChanges.push($(currentEl).text())
 			currentText = currentText.slice(0,-1)
 			$(currentEl).text(currentText);
 			relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})

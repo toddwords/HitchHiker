@@ -87,7 +87,7 @@ socket.on('guideEvent', function(data){
   }
   if(data.type == "deleteRecent"){
     if(audioTracks.length > 0){
-      var stopAudio = audioTracks.shift()
+      var stopAudio = audioTracks.pop()
       stopAudio.pause()
     }
     return false
