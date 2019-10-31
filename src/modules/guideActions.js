@@ -60,6 +60,9 @@ function bindGuideActions(){
 	$('#runFunction').click(function(){
 		runFunction($('#runFunc').val().trim())
 	})
+	$('#stopLast').click(function(){
+		relay({type:"deleteRecent"})
+	})
 
 }
 

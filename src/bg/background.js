@@ -85,6 +85,13 @@ socket.on('guideEvent', function(data){
     }
     return false
   }
+  if(data.type == "deleteRecent"){
+    if(audioTracks.length > 0){
+      var stopAudio = audioTracks.shift()
+      stopAudio.pause()
+    }
+    return false
+  }
   messageToTab(data)
   console.log(data)
 })
