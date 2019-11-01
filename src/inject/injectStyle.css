@@ -50,6 +50,11 @@
   animation-name: editing;
 
 }
+.mildEditBorder {
+	border: 2px solid black;
+	border-radius: 10px;
+	padding:10px;
+}
 #drawing-container{
 	position:absolute;
 	top:0;

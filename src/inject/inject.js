@@ -37,8 +37,13 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 		if(message.type == "click"){
 			console.log("Guide clicked at " +message.x+","+message.y)
 			var $clickEl = $(message.elPath)
-			$('.beingEdited').removeClass('beingEdited')
-			$clickEl.addClass('beingEdited')
+			if(checkWebAddress("gutenberg.org")){
+				$('.mildEditBorder').removeClass('mildEditBorder')
+				$clickEl.addClass('mildEditBorder')
+			} else{
+				$('.beingEdited').removeClass('beingEdited')
+				$clickEl.addClass('beingEdited')
+			}
 			var offset = $clickEl.offset()
 			// var $clickCircle = $("<img id='clickCircle' style='position:absolute; z-index:99999; width:200px; left:"+(offset.left) +"px; top:"+(offset.top)+"px' src='"+chrome.runtime.getURL("assets/clickCircle.gif")+"' />")
 			// var $clickCircle = $("<img id='clickCircle' style='position:absolute; z-index:99999; width:200px; left:"+message.x+"px; top:"+message.y+"px' src='"+chrome.runtime.getURL("assets/clickCircle.gif")+"' />")
@@ -140,7 +145,7 @@ $(document).keydown(function(e){
 		e.preventDefault()
 		if(e.ctrlKey && e.which == 86){
 			contentChanges.push($(currentEl).text())
-			navigator.clipboard.readText().then(clipText => currentEl.innerText = clipText);
+			navigator.clipboard.readText().then(clipText => currentEl.innerText = currentText = clipText);
 		}
 		else if(currentEl && e.ctrlKey && e.which == 90){
 			if(contentChanges.length > 0){
@@ -151,9 +156,9 @@ $(document).keydown(function(e){
 
 
 		}
-		else if(e.ctrlKey){
-			return true
-		}
+		// else if(e.ctrlKey){
+		// 	return true
+		// }
 		else if(currentEl && e.key.length == 1){
 			contentChanges.push($(currentEl).text())
 			currentText += e.key
@@ -210,7 +215,7 @@ function dance(){
 	})
 }
 function stopAnimation(){
-	$('img, p, h1,h2,h3,h4,h5,h6, a, li').removeClass('animate')
+	$('img, p, h1,h2,h3,h4,h5,h6, a, li').removeClass('animate dance dance2 fastPulse slowTop')
 }
 function nextWebsite(){
 	USER.counter++;
@@ -374,4 +379,7 @@ function sanitize(string) {
   };
   const reg = /[&<>"'/]/ig;
   return string.replace(reg, (match)=>(map[match]));
+}
+function checkWebAddress(url) {
+	return window.location.href.indexOf(url) >= 0
 }

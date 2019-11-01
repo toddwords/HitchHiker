@@ -41,8 +41,12 @@ function init(){
 		USER.username = prompt("What username would you like to go by?")
 		USER.username = sanitize(USER.username)
 		chrome.storage.sync.set({username:USER.username})
+		toServer('newMsg', {username:USER.username, msg:"has joined lobby", color:USER.color});
 	}
-	if(!USER.role){
+	$('#chat').load("../modules/chat.html",function(){
+		chatInit()
+	})
+	if(!USER.room){
 		$('#guide,#audience').fadeIn()
 		$('#audience').click(function(){
 			$('#audience,#guide').hide()
@@ -60,7 +64,7 @@ function init(){
 		})
 	} 
 	else {
-		showChat();
+		afterJoinRoom();
 	}
 
 	
@@ -100,7 +104,7 @@ function joinRoom(room){
 	$('#roomList').fadeOut()
 	USER.room = room;
 	chrome.storage.sync.set({room:room})
-	showChat()
+	afterJoinRoom()
 	$('#currentRoom').html("<strong>Currently <em>"+USER.role+"</em> in <em>"+USER.room+"</em>")
 	chrome.runtime.sendMessage({roomJoined:true})
 }
@@ -115,10 +119,8 @@ function showGuideTools(){
 
 
 
-function showChat(){
-	$('#chat').load("../modules/chat.html",function(){
-		chatInit()
-	})
+function afterJoinRoom(){
+
 	if(USER.role == "guide"){showGuideTools()}
 	
 	$('#mainDiv').fadeIn()

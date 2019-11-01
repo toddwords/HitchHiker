@@ -21,3 +21,19 @@ function addPopup(text){
 	})
 
 }
+
+
+function image(url){
+	var img = $("<img />").attr('src', url)
+	$(img).addClass("popupImg").css({
+		display:"none", 
+		position:"fixed", 
+		top:"10%", 
+		left:"20%", 
+		width:"60%", 
+		
+		"z-index":999
+	})
+	$('body').prepend(img)
+	$(img).fadeIn(400).delay(4000).fadeOut()
+}
