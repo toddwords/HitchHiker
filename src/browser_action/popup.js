@@ -105,7 +105,6 @@ function joinRoom(room){
 	USER.room = room;
 	chrome.storage.sync.set({room:room})
 	afterJoinRoom()
-	$('#currentRoom').html("<strong>Currently <em>"+USER.role+"</em> in <em>"+USER.room+"</em>")
 	chrome.runtime.sendMessage({roomJoined:true})
 }
 function showGuideTools(){
@@ -122,7 +121,7 @@ function showGuideTools(){
 function afterJoinRoom(){
 
 	if(USER.role == "guide"){showGuideTools()}
-	
+	$('#currentRoom').html("<strong>Currently <em>"+USER.role+"</em> in <em>"+USER.room+"</em>")
 	$('#mainDiv').fadeIn()
 
 	$('#reset').fadeIn().click(reset)
