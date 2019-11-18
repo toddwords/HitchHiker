@@ -61,8 +61,12 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
   }
 })
 // chrome.windows.create({url:"https://valley-gastonia.glitch.me/", type:"popup", state:"minimized"})
-var socket = io('https://hitchhiker.glitch.me/')
+var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
 
+socket.on('connect_error', function(){
+    console.log("connection error, switching to backup server")
+    socket = io('https://hitchhiker.glitch.me')
+})
 socket.on('guideEvent', function(data){
   if(data.type == "topSites"){
     if(USER.role == "guide"){return false};
