@@ -21,9 +21,11 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 	}
 	if(message.joinRoomSuccess){
 		joinRoom(message.room)
+		console.log(message.room + " joined")
 	}
 	if(message.disconnected){
 		reset()
+		console.log("disconnected")
 	}
 })
 

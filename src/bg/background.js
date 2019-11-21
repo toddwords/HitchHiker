@@ -4,7 +4,7 @@ chrome.storage.sync.get(function(syncData){
       if(!syncData.id){
         chrome.storage.sync.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
       }
-      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false})
+      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false})
       USER = syncData;
     })
 chrome.storage.onChanged.addListener(function(){
@@ -61,6 +61,7 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
   }
 })
 // chrome.windows.create({url:"https://valley-gastonia.glitch.me/", type:"popup", state:"minimized"})
+// var socket = io('https://hitchhiker.glitch.me')
 var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
 
 socket.on('connect_error', function(){
@@ -113,7 +114,8 @@ socket.on('newMsg', function(data){
 	addMsg(data.username, data.msg, data.color)
 	//speakText(data.msg)
 	chrome.runtime.sendMessage({newMsg: data})
-  chrome.tabs.sendMessage(USER.performanceTab, {newMsg: data});
+  if(USER.performanceTab)
+    chrome.tabs.sendMessage(USER.performanceTab, {newMsg: data});
 
 })
 socket.on('changeText', function(data){

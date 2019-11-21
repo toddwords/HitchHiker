@@ -66,7 +66,7 @@ function loadEventHandlers(){
 		USER.currentPerformance = currentPerformance;
 		chrome.storage.sync.set(USER);
 	})
-	$('#addWebsite').click(function(){
+	$('#addWebsiteDashboard').click(function(){
 		var newURL = $('#newURL').val().trim();
 		if(newURL.indexOf('http') < 0){newURL = "http://"+newURL}
 		if(isURL(newURL)){

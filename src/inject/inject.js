@@ -6,17 +6,20 @@ var elType = "";
 var elPath;
 var contentChanges = [];
 var graffiti = false;
+var scrollSync = false;
 var USER;
 var drawingCanvas;
 var urlList;
 chrome.storage.sync.get(function(data){
 	USER = data;
+	updateToggles()
 	console.log(USER.performances[USER.currentPerformance].urlList)
 	urlList = USER.performances[USER.currentPerformance].urlList;
 })
 chrome.storage.onChanged.addListener(function(){
 	chrome.storage.sync.get(function(data){
 		USER = data;
+		updateToggles()
 	})
 })
 chrome.runtime.sendMessage({isGuide:"ask"}, function(answer){
@@ -97,10 +100,13 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 			var fn = window[message.fn]
 			if (typeof fn === "function") fn.apply(null, message.params);
 		}
+		if(message.type == "scrollSync" && !guide){
+			$(window).scrollTop(message.scroll);
+			console.log("scroll syncing")
+		}
 		if(message.type){
 			chrome.runtime.sendMessage({socketEvent:"status", data:{msg:message.type + " running"}})
 		}
-		console.log(message)
 })
 $('*').click(function(e){
 	if(graffiti && guide){
@@ -175,7 +181,17 @@ $(document).keydown(function(e){
 		return false
 	}
 })
-
+$(window).scroll(function(){
+	if(scrollSync && guide){ 
+		scrollAmt = $(window).scrollTop()
+		console.log(scrollAmt)
+		relay({type:"scrollSync", scroll:scrollAmt})
+		console.log("sending scroll")
+	}
+})
+function updateToggles(){
+	scrollSync = USER.scrollSync;
+}
 function changeText(str){
 	$('h1,h2,h3:not(:has(img)),h4,h5,h6,span:not(:has(*)),p,a:not(:has(img)),div:not(:has(*)),li:not(:has(*)),option,strong,b,em').not("#replStart").text(str)
 }

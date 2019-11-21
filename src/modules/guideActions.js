@@ -26,6 +26,11 @@ function bindGuideActions(){
 	$('#edit button').click(function(){
 		relay({type:"graffitiOn"})
 	})
+	$('#scrollSync').prop("checked", USER.scrollSync)
+	$('#scrollSync').change(function(){
+		USER.scrollSync = $(this).prop("checked")
+		chrome.storage.sync.set({scrollSync:$(this).prop("checked")})
+	})
 	$('#burn button').click(function(){
 		relay({type:"multiGif", "src": "assets/flames.gif", remove:$('#removeGif').is(":checked")})
 	})
@@ -106,7 +111,7 @@ function choice(arr){
 function runFunction(msg){
 	var spaceIndex = msg.indexOf(" ") > 0 ? msg.indexOf(" ") : msg.length
 	var fn = msg.slice(0,spaceIndex);
-    var fnparams = [msg.slice(spaceIndex)]
+    var fnparams = [msg.slice(spaceIndex+1)]
     relay({type:"runFunction", fn: fn, params: fnparams})
 }
 function newPage(newURL){

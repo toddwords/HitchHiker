@@ -6,9 +6,9 @@
 //to edit a new website, copy and past the three lines starting with if() and ending with }
 function changeWebContent(){
 	if(checkWebAddress("nytimes.com")){
-		replaceText("Donald H. Trump", "Sunscreen Sandwich")
-		replaceText("Donald Trump", "Sunscreen Sandwich")
-		replaceText("Trump", "Sunscreen Sandwich")
+		replaceText("rump", "Sunscreen Sandwich")
+		// replaceText("Donald Trump", "Sunscreen Sandwich")
+		// replaceText("rump", "Sunscreen Sandwich")
 	}
 
 	if(checkWebAddress("craigslist")){
@@ -47,11 +47,12 @@ function changeWebContent(){
 	}
 }
 
-//you can ignore everything below here
+//here are the functions you can call
 
 
 changeWebContent();
 setTimeout(changeWebContent, 3000)
+
 function checkWebAddress(url) {
 	return window.location.href.indexOf(url) >= 0
 }
@@ -75,14 +76,7 @@ function replaceImages(imgLinkArray){
 	  console.log(images[i].src)
 	}
 }
-function replaceText(findWord, replaceWord){
- var textnodes = getTextNodes();
- var findRE = new RegExp(findWord, "gi")
- for (var i = 0; i < textnodes.length; i++) {
-   var text = textnodes[i].nodeValue;
-   textnodes[i].nodeValue = text.replace(findRE, replaceWord);
- }
-}
+
  function getTextNodes() {
  // get all html elements
  var elements = document.querySelectorAll("body, body *");
