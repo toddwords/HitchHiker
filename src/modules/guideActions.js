@@ -19,6 +19,11 @@ function bindGuideActions(){
 	$('#draw button').click(function(){
 		relay({type:"toggleDrawing"})
 	})
+	$('#speakChat').prop("checked", USER.speakChat)
+	$('#speakChat').change(function(){
+		USER.speakChat = $(this).prop("checked")
+		chrome.storage.sync.set({speakChat:$(this).prop("checked")})
+	})
 	$('#changeText button').click(function(){
 		relay({type:"changeText", "text": $('#changeText input').val()})
 		$('#changeText input').val("")

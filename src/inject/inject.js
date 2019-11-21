@@ -6,7 +6,6 @@ var elType = "";
 var elPath;
 var contentChanges = [];
 var graffiti = false;
-var scrollSync = false;
 var USER;
 var drawingCanvas;
 var urlList;
@@ -182,16 +181,14 @@ $(document).keydown(function(e){
 	}
 })
 $(window).scroll(function(){
-	if(scrollSync && guide){ 
+	if(USER.scrollSync && guide){ 
 		scrollAmt = $(window).scrollTop()
 		console.log(scrollAmt)
 		relay({type:"scrollSync", scroll:scrollAmt})
 		console.log("sending scroll")
 	}
 })
-function updateToggles(){
-	scrollSync = USER.scrollSync;
-}
+
 function changeText(str){
 	$('h1,h2,h3:not(:has(img)),h4,h5,h6,span:not(:has(*)),p,a:not(:has(img)),div:not(:has(*)),li:not(:has(*)),option,strong,b,em').not("#replStart").text(str)
 }
@@ -266,6 +263,8 @@ function toggleChatInput(){
 						msg = sanitize(msg)
 						// addChatBubble(USER.username,msg, USER.color )
 						chrome.runtime.sendMessage({socketEvent: "newMsg",data:{username:USER.username, color:USER.color, msg:msg}})
+						if(guide && USER.speakChat)
+							relay({type:"speakText", msg:msg})
 					}
 				}
 			}

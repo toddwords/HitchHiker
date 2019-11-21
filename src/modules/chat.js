@@ -27,9 +27,12 @@ function fillMessages(messages){
 }
 function sendMsg(){
 	var msg = $('#chatForm input').val();
+	msg = sanitize(msg)
 	if(msg.length > 0){
 		toServer('newMsg', {username:USER.username, msg:msg, color:USER.color});
 		$('#chatForm input').val('')
+		if(USER.role == "guide" && USER.speakChat)
+			relay({type:"speakText", msg:msg})
 	}
 	console.log("sending msg")
 }
@@ -45,4 +48,14 @@ function addMsg(user, msg, color){
 }
 function toServer(eName, obj={}){
 	chrome.runtime.sendMessage({socketEvent: eName, data: obj })
+}
+
+function sanitize(string) {
+  const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+  };
+  const reg = /[&<>]/ig;
+  return string.replace(reg, (match)=>(map[match]));
 }

@@ -4,7 +4,7 @@ chrome.storage.sync.get(function(syncData){
       if(!syncData.id){
         chrome.storage.sync.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
       }
-      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false})
+      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false})
       USER = syncData;
     })
 chrome.storage.onChanged.addListener(function(){
@@ -96,6 +96,9 @@ socket.on('guideEvent', function(data){
       stopAudio.pause()
     }
     return false
+  }
+  if(data.type == "speakText"){
+    speakText(data.msg)
   }
   messageToTab(data)
   console.log(data)
