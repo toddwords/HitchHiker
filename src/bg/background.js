@@ -2,9 +2,9 @@ var USER;
 var audioTracks = [];
 chrome.storage.sync.get(function(syncData){
       if(!syncData.id){
-        chrome.storage.sync.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
+        chrome.storage.sync.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[], "actions":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
       }
-      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false})
+      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false, isRecording:false})
       USER = syncData;
     })
 chrome.storage.onChanged.addListener(function(){
@@ -61,8 +61,8 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
   }
 })
 // chrome.windows.create({url:"https://valley-gastonia.glitch.me/", type:"popup", state:"minimized"})
-// var socket = io('https://hitchhiker.glitch.me')
-var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
+var socket = io('https://hitchhiker.glitch.me')
+// var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
 
 socket.on('connect_error', function(){
     console.log("connection error, switching to backup server")
@@ -157,7 +157,7 @@ function updatePage(newURL){
 function createNewPerformanceTab(callback=function(){}){
   chrome.tabs.update({url:"https://hitchhiker.glitch.me/start.html", active:true},function(tab){
     USER.performanceTab = tab.id;
-    sync()
+    chrome.storage.sync.set({performanceTab:tab.id})
     console.log("performance tab created with id " + USER.performanceTab)
     chrome.tabs.move(USER.performanceTab, {index:0})
     callback()
@@ -165,7 +165,7 @@ function createNewPerformanceTab(callback=function(){}){
 }
 function addMsg(user, msg, color){
 	USER.messages.push({username:user, message:msg, color:color})
-  sync()
+  chrome.storage.sync.set({messages:USER.messages})
 }
 
 function speakText(text){
@@ -184,6 +184,8 @@ function onJoinRoom(){
   createNewPerformanceTab(function(){
     if(USER.role == "guide")
       chrome.windows.create({type:"popup",url:chrome.extension.getURL("src/dashboard/index.html"), width:960, height:1080})
+    else
+      socket.emit("getCurrentPage")
   })
 }
 

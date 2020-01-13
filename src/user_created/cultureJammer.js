@@ -6,9 +6,9 @@
 //to edit a new website, copy and past the three lines starting with if() and ending with }
 function changeWebContent(){
 	if(checkWebAddress("nytimes.com")){
+		replaceText("Donald H. Trump", "Sunscreen Sandwich")
+		replaceText("Donald Trump", "Sunscreen Sandwich")
 		replaceText("rump", "Sunscreen Sandwich")
-		// replaceText("Donald Trump", "Sunscreen Sandwich")
-		// replaceText("rump", "Sunscreen Sandwich")
 	}
 
 	if(checkWebAddress("craigslist")){
@@ -58,6 +58,7 @@ function checkWebAddress(url) {
 }
 function replaceText(findWord, replaceWord){
  var textnodes = getTextNodes();
+
  var findRE = new RegExp(findWord, "gi")
  for (var i = 0; i < textnodes.length; i++) {
    var text = textnodes[i].nodeValue;

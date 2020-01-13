@@ -31,10 +31,18 @@ function sendMsg(){
 	if(msg.length > 0){
 		toServer('newMsg', {username:USER.username, msg:msg, color:USER.color});
 		$('#chatForm input').val('')
-		if(USER.role == "guide" && USER.speakChat)
-			relay({type:"speakText", msg:msg})
+		if(USER.role == "guide"){
+			save({fn:"sendChatMsg", params:[msg,USER.speakChat]})  
+			if(USER.speakChat)
+				relay({type:"speakText", msg:msg})
+		}
 	}
 	console.log("sending msg")
+}
+function sendChatMsg(msg, speakChat){
+		toServer('newMsg', {username:USER.username, msg:msg, color:USER.color});
+		if(USER.speakChat)
+			relay({type:"speakText", msg:msg})
 }
 
 function addMsg(user, msg, color){

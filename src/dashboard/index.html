@@ -24,11 +24,18 @@
 </select>
 
 <div>
-<input id='newURL' /><button id="addWebsiteDashboard">Add Website</button><button id="removeWebsite">Remove Website</button>
+<input id='newURL' /><button id="addWebsiteDashboard">Add Website</button><br><button id="websiteUp">&uarr;</button><button id="websiteDown">&darr;</button><button id="removeWebsite">Remove Website</button>
 </div>
+</div>
+<div id="savedActions" class="masonry-brick">
+	<h3>Saved Actions</h3>
+	<p><select size="7" id="actionList"></select></p>
+	<p><button id="playAction">Play</button><button id="actionUp">&uarr;</button><button id="actionDown">&darr;</button><button id="actionDel">Remove</button></p>
+
 </div>
 <div id="actions" class='masonry-brick'>
 </div>
+
 <div id="audienceDiv" class='masonry-brick'>
 	<h3>Audience</h3>
 	<select size="7" id="audienceList"></select>

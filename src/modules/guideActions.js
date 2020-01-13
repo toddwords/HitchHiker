@@ -11,13 +11,18 @@ function bindGuideActions(){
 		$('#urlList').append("<option>"+USER.performances[USER.currentPerformance].urlList[i]+"</option>")
 	}
 	$('#goButton').click(function(){
-		newPage($('#urlList').val())
-		USER.counter = $('#urlList')[0].selectedIndex;
-		sync()
+		console.log("go button pressed")
+		var url = $('#urlList').val();
+		var index = $('#urlList')[0].selectedIndex
+		console.log("url: "+url)
+		console.log("index: "+index)
+		save({fn:"goToPage", params:[url, index]})
+		goToPage(url, index)
 	})
 
 	$('#draw button').click(function(){
-		relay({type:"toggleDrawing"})
+		toggleDraw()
+		save({fn:"toggleDraw", params:[]})
 	})
 	$('#speakChat').prop("checked", USER.speakChat)
 	$('#speakChat').change(function(){
@@ -25,11 +30,12 @@ function bindGuideActions(){
 		chrome.storage.sync.set({speakChat:$(this).prop("checked")})
 	})
 	$('#changeText button').click(function(){
-		relay({type:"changeText", "text": $('#changeText input').val()})
-		$('#changeText input').val("")
+		changeText($('#changeText input').val())
+		save({fn:"changeText", params:[$('#changeText input').val()]})
 	})
 	$('#edit button').click(function(){
-		relay({type:"graffitiOn"})
+		editOn()
+		save({fn:"editOn", params:[]})
 	})
 	$('#scrollSync').prop("checked", USER.scrollSync)
 	$('#scrollSync').change(function(){
@@ -37,24 +43,30 @@ function bindGuideActions(){
 		chrome.storage.sync.set({scrollSync:$(this).prop("checked")})
 	})
 	$('#burn button').click(function(){
-		relay({type:"multiGif", "src": "assets/flames.gif", remove:$('#removeGif').is(":checked")})
+		burn($('#removeGif').is(":checked"))
+		save({fn:"burn", params:[$('#removeGif').is(":checked")]})
 	})
 	$('#rain button').click(function(){
-		relay({type:"multiGif", "src": "assets/rain.gif", remove:$('#removeGif').is(":checked")})
+		rain($('#removeGif').is(":checked"))
+		save({fn:"rain", params:[$('#removeGif').is(":checked")]})
 	})
 	$('#dance button').click(function(){
-		relay({type:"dance"})
+		dance()
+		save({fn:"dance", params:[]})
 	})
 	$('#stopAnimation button').click(function(){
-		relay({type:"stopAnimation"})
-		console.log("good click")
+		stopAnimation()
+		save({fn:"stopAnimation", params:[]})
+		
 	})
 	$('#getGif button').click(function(){
-		getRandomGif($('#getGif input').val(), $('#removeGif').is(":checked"), $('#sticker').is(":checked"))
+		getGif($('#getGif input').val(), $('#removeGif').is(":checked"), $('#sticker').is(":checked"))
 		// $('#getGif input').val("")
+		save({fn:"getGif", params:[$('#getGif input').val(), $('#removeGif').is(":checked"), $('#sticker').is(":checked")]})
 	})
 	$('#topSites button').click(function(){
-		relay({type:"topSites", num: parseInt($(this).text())-1})
+		goTopSite(parseInt($(this).text())-1)
+		save({fn:"goTopSite", params:[parseInt($(this).text())-1]})
 	})
 	// $('#sounds button').click(function(){
 	// 	var src = "assets/" + $(this)[0].id + ".mp3"
@@ -63,26 +75,67 @@ function bindGuideActions(){
 	// })
 	$('#getSound button').first().click(function(){
 		getSound($('#getSound input').val(), $('#loop').is(":checked"), $('#randomSound').is(":checked"))
+		save({fn:"getSound", params:[$('#getSound input').val(), $('#loop').is(":checked"), $('#randomSound').is(":checked")]})
 	})
 	$('#stopAudio').click(function(){
-		relay({type:"stopAudio"})
+		stopAudio()
+		save({fn:"stopAudio", params:[]})
+
+	})
+	$('#stopLast').click(function(){
+		stopLastAudio()
+		save({fn:"stopLastAudio", params:[]})
 	})
 	$('#runFunction').click(function(){
 		runFunction($('#runFunc').val().trim())
+		save({fn:"runFunction", params:[$('#runFunc').val().trim()]})
 	})
-	$('#stopLast').click(function(){
-		relay({type:"deleteRecent"})
+	$('#recordActions').prop("checked", USER.isRecording)
+	$('#recordActions').change(function(){
+		USER.isRecording = $(this).prop("checked")
+		chrome.storage.sync.set({isRecording:$(this).prop("checked")})
 	})
+
 
 }
+function changeTxt(text){
+	relay({type:"changeText", "text": text})
+	$('#changeText input').val("")
+}
+function editOn(){
+	relay({type:"graffitiOn"})
+}
+function goToPage(url,counter){
+	newPage(url)
+	USER.counter = counter;
+	console.log(USER)
+	console.log("USER.counter: "+USER.counter)
+	chrome.storage.sync.set({counter:counter})
+}
+function toggleDraw(){
+	relay({type:"toggleDrawing"})
+}
+function burn(remove){
+	relay({type:"multiGif", "src": "assets/flames.gif", remove:remove})
 
-function getRandomGif(tag, remove=true, sticker=true){
-	var url = sticker ? 'https://api.giphy.com/v1/stickers/random?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&tag='+tag : 'https://api.giphy.com/v1/gifs/random?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&tag='+tag
+}
+function rain(remove){
+	relay({type:"multiGif", "src": "assets/rain.gif", remove:remove})
+
+}
+function dance(){
+	relay({type:"dance"})
+}
+function stopAnimation(){
+	relay({type:"stopAnimation"})
+}
+function getGif(tag, remove=true, sticker=true){
+	var url = sticker ? 'https://api.giphy.com/v1/stickers/search?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&limit=1&q='+tag : 'https://api.giphy.com/v1/gifs/random?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&limit=1&q='+tag
 	console.log(url)
 	fetch(url)
 		.then(function(response){return response.json()})
 		.then(function(data){
-			relay({type:"multiGif", src:data.data.image_original_url, remove:remove})
+			relay({type:"multiGif", src:data.data[0].images.downsized_medium.url, remove:remove})
 		  })
 		.catch(function(error){
 			return console.log(error)
@@ -102,6 +155,15 @@ function getSound(query,loop=false,random=false){
 		.catch(function(error){
 			return console.log(error)
 		})
+}
+function stopAudio(){
+	relay({type:"stopAudio"})
+}
+function stopLastAudio(){
+	relay({type:"deleteRecent"})
+}
+function goTopSite(num){
+		relay({type:"topSites", num: num})
 }
 function changeText(str){
   	chrome.tabs.sendMessage(USER.performanceTab, {changeText: str});
@@ -129,4 +191,13 @@ function addWebsite(){
 		$('#urlList').append("<option>"+tabs[0].url+"</option>")
 		sync()
 	})
+}
+
+function save(obj){
+	if(!USER.performances[USER.currentPerformance].actions)
+		USER.performances[USER.currentPerformance].actions = [];
+	if(USER.isRecording){
+		USER.performances[USER.currentPerformance].actions.push(obj)
+		sync()
+	}
 }

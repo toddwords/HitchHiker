@@ -278,7 +278,7 @@ function parseChatInput(msg){
 	msg = msg.trim()
 	if(guide && msg.slice(0,2) == "g "){
           msg = msg.slice(2)
-          getRandomGif(msg)
+          getGif(msg)
           console.log("gettin gif")
           return false
     }

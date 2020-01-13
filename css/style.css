@@ -61,8 +61,18 @@ button {
 .masonry { 
   display: flex;
   flex-flow: column wrap;
-  max-height: 800px;
+  max-height: 650px;
   width: 100%;
+}
+@media (max-width: 960px){
+	.masonry{
+		max-height:1000px;
+	}
+}
+@media (max-width: 500px){
+	.masonry{
+		max-height:100000px;
+	}
 }
 .masonry-brick {
   margin: 0 8px 8px 0;
