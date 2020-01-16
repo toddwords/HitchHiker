@@ -27,7 +27,7 @@ function bindGuideActions(){
 	$('#speakChat').prop("checked", USER.speakChat)
 	$('#speakChat').change(function(){
 		USER.speakChat = $(this).prop("checked")
-		chrome.storage.sync.set({speakChat:$(this).prop("checked")})
+		chrome.storage.local.set({speakChat:$(this).prop("checked")})
 	})
 	$('#changeText button').click(function(){
 		changeText($('#changeText input').val())
@@ -40,7 +40,7 @@ function bindGuideActions(){
 	$('#scrollSync').prop("checked", USER.scrollSync)
 	$('#scrollSync').change(function(){
 		USER.scrollSync = $(this).prop("checked")
-		chrome.storage.sync.set({scrollSync:$(this).prop("checked")})
+		chrome.storage.local.set({scrollSync:$(this).prop("checked")})
 	})
 	$('#burn button').click(function(){
 		burn($('#removeGif').is(":checked"))
@@ -93,7 +93,7 @@ function bindGuideActions(){
 	$('#recordActions').prop("checked", USER.isRecording)
 	$('#recordActions').change(function(){
 		USER.isRecording = $(this).prop("checked")
-		chrome.storage.sync.set({isRecording:$(this).prop("checked")})
+		chrome.storage.local.set({isRecording:$(this).prop("checked")})
 	})
 
 
@@ -110,7 +110,7 @@ function goToPage(url,counter){
 	USER.counter = counter;
 	console.log(USER)
 	console.log("USER.counter: "+USER.counter)
-	chrome.storage.sync.set({counter:counter})
+	chrome.storage.local.set({counter:counter})
 }
 function toggleDraw(){
 	relay({type:"toggleDrawing"})

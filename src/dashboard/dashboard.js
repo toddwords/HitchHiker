@@ -1,6 +1,6 @@
 var USER;
 var currentPerformance;
-chrome.storage.sync.get(function(data){
+chrome.storage.local.get(function(data){
 	chrome.runtime.sendMessage({socketEvent: "getUsers" })
 	USER = data;
 	currentPerformance = USER.currentPerformance
@@ -24,7 +24,7 @@ chrome.storage.sync.get(function(data){
 	}, 5000)
 })
 chrome.storage.onChanged.addListener(function(){
-	chrome.storage.sync.get(function(data){
+	chrome.storage.local.get(function(data){
 		USER = data;
 		fillURLs()
 		fillActions()
@@ -58,7 +58,7 @@ function loadEventHandlers(){
 		var perfName = prompt("Name your performance:")
 		USER.performances[perfName] = {"urlList":[]}
 		$('#performanceList').prepend("<option>"+perfName+"</option>").val(perfName).trigger("change")
-		chrome.storage.sync.set(USER)
+		chrome.storage.local.set(USER)
 	})
 	$('#performanceList').change(function(){
 		$('#performanceURLs').empty()
@@ -66,7 +66,7 @@ function loadEventHandlers(){
 		currentPerformance = $('#performanceList').val()
 		fillURLs()
 		USER.currentPerformance = currentPerformance;
-		chrome.storage.sync.set(USER);
+		chrome.storage.local.set(USER);
 	})
 	$('#addWebsiteDashboard').click(function(){
 		var newURL = $('#newURL').val().trim();
@@ -160,7 +160,7 @@ function isURL(str) {
 }
 
 function sync(){
-	chrome.storage.sync.set(USER)
+	chrome.storage.local.set(USER)
 }
 
 function relay(obj){

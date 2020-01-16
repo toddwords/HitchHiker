@@ -1,11 +1,11 @@
 var USER;
-chrome.storage.sync.get(function(syncData){
+chrome.storage.local.get(function(syncData){
 	USER = syncData
 	console.log(USER)
 	init()
 })
 chrome.storage.onChanged.addListener(function(){
-	chrome.storage.sync.get(function(data){
+	chrome.storage.local.get(function(data){
 		USER = data;
 	})
 })
@@ -42,7 +42,7 @@ function init(){
 	if(!USER.username){
 		USER.username = prompt("What username would you like to go by?")
 		USER.username = sanitize(USER.username)
-		chrome.storage.sync.set({username:USER.username})
+		chrome.storage.local.set({username:USER.username})
 		toServer('newMsg', {username:USER.username, msg:"has joined lobby", color:USER.color});
 	}
 	$('#chat').load("../modules/chat.html",function(){
@@ -105,7 +105,7 @@ function joinRoom(room){
 	$('#audience,#guide').hide()
 	$('#roomList').fadeOut()
 	USER.room = room;
-	chrome.storage.sync.set({room:room})
+	chrome.storage.local.set({room:room})
 	afterJoinRoom()
 	chrome.runtime.sendMessage({roomJoined:true})
 }
@@ -154,7 +154,7 @@ function reset(){
 }
 
 function sync(){
-	chrome.storage.sync.set(USER)
+	chrome.storage.local.set(USER)
 }
 
 function relay(obj){

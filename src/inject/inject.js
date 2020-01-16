@@ -9,16 +9,16 @@ var graffiti = false;
 var USER;
 var drawingCanvas;
 var urlList;
-chrome.storage.sync.get(function(data){
+setTimeout(siteSpecific, 3000);
+chrome.storage.local.get(function(data){
 	USER = data;
-	updateToggles()
 	console.log(USER.performances[USER.currentPerformance].urlList)
 	urlList = USER.performances[USER.currentPerformance].urlList;
+
 })
 chrome.storage.onChanged.addListener(function(){
-	chrome.storage.sync.get(function(data){
+	chrome.storage.local.get(function(data){
 		USER = data;
-		updateToggles()
 	})
 })
 chrome.runtime.sendMessage({isGuide:"ask"}, function(answer){
@@ -233,7 +233,7 @@ function stopAnimation(){
 function nextWebsite(){
 	USER.counter++;
 	if(USER.counter >= urlList.length){USER.counter=0}
-	chrome.storage.sync.set({counter: USER.counter})
+	chrome.storage.local.set({counter: USER.counter})
 	window.location = urlList[USER.counter]
 }
 
@@ -306,6 +306,12 @@ function parseChatInput(msg){
     	return false
     }
     return true
+}
+
+function siteSpecific(){
+	if(checkWebAddress("web.archive.org")){
+		$('#wm-ipp-base').remove()
+	}
 }
 
 function toggleDrawing(){

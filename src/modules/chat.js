@@ -4,7 +4,7 @@ function chatInit(){
 			addMsg(message.newMsg.username, message.newMsg.msg, message.newMsg.color)
 		}
 	})
-	chrome.storage.sync.get(function(syncData){
+	chrome.storage.local.get(function(syncData){
 		fillMessages(syncData.messages)
 	})
 	$('#chatForm button').click(sendMsg)

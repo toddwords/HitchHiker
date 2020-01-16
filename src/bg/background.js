@@ -1,14 +1,14 @@
 var USER;
 var audioTracks = [];
-chrome.storage.sync.get(function(syncData){
+chrome.storage.local.get(function(syncData){
       if(!syncData.id){
-        chrome.storage.sync.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[], "actions":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
+        chrome.storage.local.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[], "actions":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
       }
-      chrome.storage.sync.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false, isRecording:false})
+      chrome.storage.local.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false, isRecording:false})
       USER = syncData;
     })
 chrome.storage.onChanged.addListener(function(){
-  chrome.storage.sync.get(function(data){
+  chrome.storage.local.get(function(data){
     USER = data;
   })
 })
@@ -157,7 +157,7 @@ function updatePage(newURL){
 function createNewPerformanceTab(callback=function(){}){
   chrome.tabs.update({url:"https://hitchhiker.glitch.me/start.html", active:true},function(tab){
     USER.performanceTab = tab.id;
-    chrome.storage.sync.set({performanceTab:tab.id})
+    chrome.storage.local.set({performanceTab:tab.id})
     console.log("performance tab created with id " + USER.performanceTab)
     chrome.tabs.move(USER.performanceTab, {index:0})
     callback()
@@ -165,7 +165,7 @@ function createNewPerformanceTab(callback=function(){}){
 }
 function addMsg(user, msg, color){
 	USER.messages.push({username:user, message:msg, color:color})
-  chrome.storage.sync.set({messages:USER.messages})
+  chrome.storage.local.set({messages:USER.messages})
 }
 
 function speakText(text){
@@ -190,5 +190,5 @@ function onJoinRoom(){
 }
 
 function sync(){
-  chrome.storage.sync.set(USER)
+  chrome.storage.local.set(USER)
 }
