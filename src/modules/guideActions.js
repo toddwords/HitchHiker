@@ -30,8 +30,8 @@ function bindGuideActions(){
 		chrome.storage.local.set({speakChat:$(this).prop("checked")})
 	})
 	$('#changeText button').click(function(){
-		changeText($('#changeText input').val())
-		save({fn:"changeText", params:[$('#changeText input').val()]})
+		changeTxt($('#changeText input').val())
+		save({fn:"changeTxt", params:[$('#changeText input').val()]})
 	})
 	$('#edit button').click(function(){
 		editOn()
@@ -130,7 +130,7 @@ function stopAnimation(){
 	relay({type:"stopAnimation"})
 }
 function getGif(tag, remove=true, sticker=true){
-	var url = sticker ? 'https://api.giphy.com/v1/stickers/search?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&limit=1&q='+tag : 'https://api.giphy.com/v1/gifs/random?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&limit=1&q='+tag
+	var url = sticker ? 'https://api.giphy.com/v1/stickers/search?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&limit=1&q='+tag : 'https://api.giphy.com/v1/gifs/search?api_key=SnREKKYQNbZIxQm0BvFOeBhW1lYCDpjy&limit=1&q='+tag
 	console.log(url)
 	fetch(url)
 		.then(function(response){return response.json()})
@@ -165,11 +165,7 @@ function stopLastAudio(){
 function goTopSite(num){
 		relay({type:"topSites", num: num})
 }
-function changeText(str){
-  	chrome.tabs.sendMessage(USER.performanceTab, {changeText: str});
 
-  	chrome.runtime.sendMessage({speakText: str})
-}
 
 function choice(arr){
 	return arr[Math.floor(Math.random() * arr.length)]

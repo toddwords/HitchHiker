@@ -337,22 +337,30 @@ function drawingSketch(P5){
 	P5.mouseDragged = function(){
 		//console.log(mouseX + ', ' + mouseY)
 		var data = {
+			px: P5.pmouseX,
+			py: P5.pmouseY,
 			x: P5.mouseX,
 			y: P5.mouseY,
 			color: myColor,
 			size: mySize
 		}
 	  	console.log(data);
-		relay({type:"mouseDraw", x: data.x, y:data.y, color: myColor, size:mySize})
+		relay({type:"mouseDraw", px: P5.pmouseX, py: P5.pmouseY, x: data.x, y:data.y, color: myColor, size:mySize})
 
-		P5.noStroke();
-		P5.fill(myColor[0], myColor[1], myColor[2]);
-		P5.ellipse(P5.mouseX, P5.mouseY, mySize, mySize)
+		P5.strokeWeight(mySize)
+		P5.stroke(myColor[0], myColor[1], myColor[2]);
+		P5.line(P5.pmouseX, P5.pmouseY, P5.mouseX, P5.mouseY)
+		//P5.noStroke();
+		// P5.fill(myColor[0], myColor[1], myColor[2]);
+		// P5.ellipse(P5.mouseX, P5.mouseY, mySize, mySize)
 	}
 	P5.newDrawing = function(data){
-		P5.noStroke();
-		P5.fill(data.color[0],data.color[1],data.color[2]);
-		P5.ellipse(data.x, data.y, data.size, data.size)
+		P5.strokeWeight(data.size)
+		P5.stroke(data.color[0], data.color[1], data.color[2]);
+		P5.line(data.px, data.py, data.x, data.y)
+		// P5.noStroke();
+		// P5.fill(data.color[0],data.color[1],data.color[2]);
+		// P5.ellipse(data.x, data.y, data.size, data.size)
 	}
 }
 
