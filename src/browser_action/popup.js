@@ -27,6 +27,15 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 		reset()
 		console.log("disconnected")
 	}
+	if(message.restartAsGuide){
+		USER.role = "guide";
+		init()
+	}
+	if(message.restartAsAudience){
+		USER.role = "audience";
+		$('#guideTools').fadeOut()
+		init()
+	}
 })
 
 //event handlers

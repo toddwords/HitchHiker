@@ -52,6 +52,9 @@ chrome.runtime.onMessage.addListener(function(message){
 			$('#audienceList').append("<option id='"+message.username+"'>"+message.username + " - "+message.msg+"</option>")
 		}
 	}
+	if(message.restartAsAudience){
+		window.close()
+	}
 })
 function loadEventHandlers(){
 	$('#newP').click(function(){
@@ -116,7 +119,15 @@ function loadEventHandlers(){
 	$('#actionList').keyup(function(e){
 		if(e.which == 32)
 			$('#playAction').trigger("click")
-		})
+	})
+	$('#addGuide').click(function(){
+		var username = $('#audienceList').children(":selected").attr("id")
+		chrome.runtime.sendMessage({socketEvent: "addGuide", data: {username:username}})
+	})
+	$('#swapGuide').click(function(){
+		var username = $('#audienceList').children(":selected").attr("id")
+		chrome.runtime.sendMessage({socketEvent: "swapGuide", data: {username:username}})
+	})
 
 }
 function fillURLs(){

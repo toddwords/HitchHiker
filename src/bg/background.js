@@ -41,10 +41,12 @@ chrome.extension.onMessage.addListener(
     if(message.newPageClient){
       newPage(message.newPageClient)
     }
+
   });
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     //make sure this is the active tab
+    console.log(changeInfo)
     if(USER.role == "guide" && tab.url.indexOf('http') >= 0 && changeInfo.url && tabId == USER.performanceTab){
       socket.emit('newPage', {url:tab.url})
       tab.title = "[HitchHiker] "+tab.title;
@@ -60,8 +62,9 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
     createNewPerformanceTab();
   }
 })
-// chrome.windows.create({url:"https://valley-gastonia.glitch.me/", type:"popup", state:"minimized"})
-// var socket = io('https://hitchhiker.glitch.me')
+//DEV SERVER
+//var socket = io('https://hitchhiker.glitch.me')
+//PRODUCTION SERVER
 var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
 
 socket.on('connect_error', function(){
@@ -126,7 +129,20 @@ socket.on('changeText', function(data){
 	changeText(data.newText)
 	speakText(data.newText)
 })
-
+socket.on('becomeGuide', function(data){
+  USER.role = "guide"
+  sync()
+  console.log("i am a guide now")
+  chrome.runtime.sendMessage({restartAsGuide:true})
+})
+socket.on("becomeAudience", function(){
+    USER.role = "audience"
+    sync()
+    console.log("i am audience now")
+    chrome.runtime.sendMessage({restartAsAudience:true})
+})
+        
+    
 socket.on('disconnect', function(){
   chrome.runtime.sendMessage({disconnected:true})
 })
