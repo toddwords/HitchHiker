@@ -60,11 +60,13 @@ function init(){
 	if(!USER.room){
 		$('#guide,#audience').fadeIn()
 		$('#audience').click(function(){
-			$('#audience,#guide').hide()
-			toServer('getRooms')
+			// $('#audience,#guide').hide()
+			//toServer('getRooms')
+			let roomToJoin = prompt("what is the name of the room you'd like to join?")
 			USER.role = "audience"
 			USER.messages = []
 			sync()
+			attemptJoinRoom(roomToJoin)
 		})
 		$('#guide').click(function(){
 			USER.messages = []
@@ -106,10 +108,12 @@ function showUsers(users){
 		console.log(users[i])
 	}
 }
+
 function attemptJoinRoom(room){
 	toServer("joinRoom", {room:room, username:USER.username, role:USER.role})
 	
 }
+
 function joinRoom(room){
 	$('#audience,#guide').hide()
 	$('#roomList').fadeOut()
@@ -118,6 +122,7 @@ function joinRoom(room){
 	afterJoinRoom()
 	chrome.runtime.sendMessage({roomJoined:true})
 }
+
 function showGuideTools(){
 	$('#guideTools').fadeIn()
 	
@@ -175,10 +180,7 @@ function sanitize(string) {
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#x27;',
-      "/": '&#x2F;',
   };
-  const reg = /[&<>"'/]/ig;
+  const reg = /[&<>]/ig;
   return string.replace(reg, (match)=>(map[match]));
 }

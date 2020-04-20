@@ -63,9 +63,9 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
   }
 })
 //DEV SERVER
-//var socket = io('https://hitchhiker.glitch.me')
+var socket = io('https://hitchhiker.glitch.me')
 //PRODUCTION SERVER
-var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
+// var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
 
 socket.on('connect_error', function(){
     console.log("connection error, switching to backup server")
