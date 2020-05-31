@@ -33,6 +33,10 @@ function bindGuideActions(){
 		changeTxt($('#changeText input').val())
 		save({fn:"changeTxt", params:[$('#changeText input').val()]})
 	})
+	$('#changeImages button').click(function(){
+		relay({type:"changeImages", params:[$('#changeImages input').val()]})
+		save({fn:"changeImages", params:[$('#changeImages input').val()]})
+	})
 	$('#edit button').click(function(){
 		editOn()
 		save({fn:"editOn", params:[]})
@@ -64,10 +68,10 @@ function bindGuideActions(){
 		// $('#getGif input').val("")
 		save({fn:"getGif", params:[$('#getGif input').val(), $('#removeGif').is(":checked"), $('#sticker').is(":checked")]})
 	})
-	$('#topSites button').click(function(){
-		goTopSite(parseInt($(this).text())-1)
-		save({fn:"goTopSite", params:[parseInt($(this).text())-1]})
-	})
+	// $('#topSites button').click(function(){
+	// 	goTopSite(parseInt($(this).text())-1)
+	// 	save({fn:"goTopSite", params:[parseInt($(this).text())-1]})
+	// })
 	// $('#sounds button').click(function(){
 	// 	var src = "assets/" + $(this)[0].id + ".mp3"
 	// 	console.log(src)
@@ -102,6 +106,8 @@ function changeTxt(text){
 	relay({type:"changeText", "text": text})
 	$('#changeText input').val("")
 }
+
+
 function editOn(){
 	relay({type:"graffitiOn"})
 }

@@ -103,6 +103,11 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 			$(window).scrollTop(message.scroll);
 			console.log("scroll syncing")
 		}
+		if(message.type && message.params){
+			let func = window[message.type];
+			console.log(func)
+			if(typeof func == "function") func.apply(null, message.params)
+		}
 		if(message.type){
 			chrome.runtime.sendMessage({socketEvent:"status", data:{msg:message.type + " running"}})
 		}
@@ -141,7 +146,7 @@ $(document).keydown(function(e){
 			// toggleDrawing()
 			// console.log("toggling drawing")
 		}
-		else if(e.which == 39){
+		else if(e.ctrlKey && e.which == 39){
 			nextWebsite()
 		}
 	}
@@ -191,6 +196,20 @@ $(window).scroll(function(){
 
 function changeText(str){
 	$('h1,h2,h3:not(:has(img)),h4,h5,h6,span:not(:has(*)),p,a:not(:has(img)),div:not(:has(*)),li:not(:has(*)),option,strong,b,em').not("#replStart").text(str)
+}
+function changeImages(urls){
+	var images = $('img,picture, picture source')
+	console.log(images)
+	var imgLinkArray = urls.trim().split(" ")
+	
+	for (var i = 0, l = images.length; i < l; i++) {
+	  console.log(imgLinkArray[i % imgLinkArray.length])
+	  console.log(images[i].src)
+	  images[i].src = imgLinkArray[i % imgLinkArray.length]
+	  images[i]["data-src"] = imgLinkArray[i % imgLinkArray.length]
+	  images[i].srcset = imgLinkArray[i % imgLinkArray.length]
+	  console.log(images[i].src)
+    }
 }
 function multiGif(src, remove){
 	var gifCreator = setInterval(function(){
