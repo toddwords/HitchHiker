@@ -30,8 +30,8 @@ function bindGuideActions(){
 		chrome.storage.local.set({speakChat:$(this).prop("checked")})
 	})
 	$('#changeText button').click(function(){
-		changeTxt($('#changeText input').val())
 		save({fn:"changeTxt", params:[$('#changeText input').val()]})
+		changeTxt($('#changeText input').val())
 	})
 	$('#changeImages button').click(function(){
 		relay({type:"changeImages", params:[$('#changeImages input').val()]})

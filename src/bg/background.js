@@ -65,12 +65,17 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
 //DEV SERVER
 // var socket = io('https://hitchhiker.glitch.me')
 //PRODUCTION SERVER
-var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
+// var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
+var serverURL = $.ajax({
+                    url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentServer.txt",
+                    async: false
+                 }).responseText;
 
-socket.on('connect_error', function(){
-    console.log("connection error, switching to backup server")
-    socket = io('https://hitchhiker.glitch.me')
-})
+let socket = io(serverURL)
+// socket.on('connect_error', function(){
+//     console.log("connection error, switching to backup server")
+//     socket = io('https://hitchhiker.glitch.me')
+// })
 socket.on('guideEvent', function(data){
   if(data.type == "topSites"){
     if(USER.role == "guide"){return false};
