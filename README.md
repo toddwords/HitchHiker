@@ -12,6 +12,7 @@ To install:
 - Visit any new website
 - You should see a hitchhiking thumb icon in the upper right corner of your browser. Click it.
 - If you are going to be in the audience, click audience then enter the room name your guide has given you.
+
 To test:
 - Install a [second version of chrome](https://www.google.com/chrome/canary/)
 - Follow the steps above for the new version of chrome
