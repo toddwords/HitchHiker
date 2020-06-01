@@ -62,6 +62,7 @@ function loadEventHandlers(){
 		USER.performances[perfName] = {"urlList":[]}
 		$('#performanceList').prepend("<option>"+perfName+"</option>").val(perfName).trigger("change")
 		chrome.storage.local.set(USER)
+		fillURLs();
 	})
 	$('#performanceList').change(function(){
 		$('#performanceURLs').empty()
@@ -77,8 +78,8 @@ function loadEventHandlers(){
 		if(isURL(newURL)){
 			$('#newURL').val('')
 			USER.performances[currentPerformance].urlList.push(newURL)
-			$('#performanceURLs').append("<option>"+newURL+"</option>")
 			sync()
+			fillURLs();
 		}
 	})
 	$('#websiteUp').click(function(){
@@ -132,10 +133,11 @@ function loadEventHandlers(){
 }
 function fillURLs(){
 	var urls = USER.performances[currentPerformance].urlList;
-	$('#performanceURLs').empty()
+	$('#performanceURLs, #urlList').empty()
 	for (var i = 0; i < urls.length; i++) {
-		$('#performanceURLs').append("<option>"+urls[i]+"</option>")
+		$('#performanceURLs, #urlList').append("<option>"+urls[i]+"</option>")
 	}
+
 }
 function fillActions(){
 	if(!USER.performances[currentPerformance].actions)
