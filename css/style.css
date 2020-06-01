@@ -91,7 +91,7 @@ button {
 #roomManagement {
 	width:400px;
 }
-#guide,#audience,#reset{
+#guide,#audience{
 	display:none;
 }
 #errorMsg {

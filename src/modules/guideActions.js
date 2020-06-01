@@ -41,6 +41,10 @@ function bindGuideActions(){
 		editOn()
 		save({fn:"editOn", params:[]})
 	})
+	$('#group-edit button').click(function(){
+		toggleGroupEdit()
+		save({fn:"toggleGroupEdit", params:[]})
+	})
 	$('#scrollSync').prop("checked", USER.scrollSync)
 	$('#scrollSync').change(function(){
 		USER.scrollSync = $(this).prop("checked")
@@ -109,7 +113,10 @@ function changeTxt(text){
 
 
 function editOn(){
-	relay({type:"graffitiOn"})
+	relay({type:"graffitiToggle"})
+}
+function toggleGroupEdit(){
+	relay({type:"toggleGroupEdit"})
 }
 function goToPage(url,counter){
 	newPage(url)

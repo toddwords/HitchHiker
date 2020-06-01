@@ -48,6 +48,7 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 function init(){
 	// $('#mainDiv,#reset').hide()
 	// $('#currentRoom').html("")
+	$('#reset').click(reset)
 	if(!USER.username){
 		USER.username = prompt("What username would you like to go by?")
 		USER.username = sanitize(USER.username)
@@ -139,8 +140,8 @@ function afterJoinRoom(){
 	if(USER.role == "guide"){showGuideTools()}
 	$('#currentRoom').html("<strong>Currently <em>"+USER.role+"</em> in <em>"+USER.room+"</em>")
 	$('#mainDiv').fadeIn()
+	$('#reset').text("Leave Room")
 
-	$('#reset').fadeIn().click(reset)
 	
 }
 
@@ -160,11 +161,14 @@ function toServer(eName, obj={}){
 
 
 function reset(){
-	USER.role = false;
-	USER.room = false;
-	toServer("leaveRoom", USER)
-	sync()
-	location.reload()
+	if(!USER.role){chrome.runtime.sendMessage({reconnect:true})}
+	else {
+		USER.role = false;
+		USER.room = false;
+		toServer("leaveRoom", USER)
+		sync()
+		location.reload()
+	}
 }
 
 function sync(){

@@ -6,6 +6,8 @@ var elType = "";
 var elPath;
 var contentChanges = [];
 var graffiti = false;
+var groupEdit = false;
+var clearEditBorder;
 var USER;
 var drawingCanvas;
 var urlList;
@@ -43,10 +45,10 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 				$('.mildEditBorder').removeClass('mildEditBorder')
 				$clickEl.addClass('mildEditBorder')
 			} else{
-				$('.beingEdited').removeClass('beingEdited')
+				if(!groupEdit) $('.beingEdited').removeClass('beingEdited')
 				$clickEl.addClass('beingEdited')
 			}
-			var offset = $clickEl.offset()
+			//var offset = $clickEl.offset()
 			// var $clickCircle = $("<img id='clickCircle' style='position:absolute; z-index:99999; width:200px; left:"+(offset.left) +"px; top:"+(offset.top)+"px' src='"+chrome.runtime.getURL("assets/clickCircle.gif")+"' />")
 			// var $clickCircle = $("<img id='clickCircle' style='position:absolute; z-index:99999; width:200px; left:"+message.x+"px; top:"+message.y+"px' src='"+chrome.runtime.getURL("assets/clickCircle.gif")+"' />")
 			// console.log($clickCircle)
@@ -61,10 +63,21 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 			if(message.originalText !== originalText || message.elType !== elType){
 				originalText = message.originalText
 				elType = message.elType
-				currentEl = $(message.elPath)
+				//currentEl = $(message.elPath)
 				// currentEl = $(message.elType+":contains("+message.originalText+")")
 			}
-			$(currentEl).text(message.currentText);
+			$(message.elPath).text(message.currentText);
+		}
+		if(message.type == "removeEditBorder"){
+			$(message.elPath).removeClass("beingEdited")
+		}
+		if(message.type == "graffitiToggle"){
+			graffiti = !graffiti;
+		}
+		if(message.type == "toggleGroupEdit"){
+			graffiti = groupEdit
+			graffiti = !graffiti;
+			groupEdit = !groupEdit
 		}
 		if(message.type == "toggleDrawing"){
 			console.log("drawing on")
@@ -92,9 +105,7 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 		if(message.type == "stopAnimation"){
 			stopAnimation()
 		}
-		if(message.type == "graffitiOn"){
-			graffiti = true;
-		}
+
 		if(message.type == "runFunction"){
 			var fn = window[message.fn]
 			if (typeof fn === "function") fn.apply(null, message.params);
@@ -113,7 +124,7 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 		}
 })
 $('*').click(function(e){
-	if(graffiti && guide){
+	if(graffiti && (guide||groupEdit)){
 		var allowClick = true;
 		console.log(e)
 		if(currentEl !== e.target){
@@ -150,7 +161,7 @@ $(document).keydown(function(e){
 			nextWebsite()
 		}
 	}
-	if(graffiti && guide && $('#chatInput').length < 1){
+	if(graffiti && (guide||groupEdit) && $('#chatInput').length < 1){
 		console.log(currentEl)
 		e.preventDefault()
 		if(e.ctrlKey && e.which == 86){
@@ -180,6 +191,11 @@ $(document).keydown(function(e){
 			currentText = currentText.slice(0,-1)
 			$(currentEl).text(currentText);
 			relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})
+		}
+		else if(currentEl && e.which == 13){
+			$(currentEl).removeClass("beingEdited")
+			relay({type:"removeEditBorder", elPath:elPath})
+			currentEl = false;
 		}
 		
 		return false

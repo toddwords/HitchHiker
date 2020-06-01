@@ -1,5 +1,6 @@
 var USER;
 var audioTracks = [];
+let socket;
 chrome.storage.local.get(function(syncData){
       if(!syncData.id){
         chrome.storage.local.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[], "actions":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
@@ -41,6 +42,10 @@ chrome.extension.onMessage.addListener(
     if(message.newPageClient){
       newPage(message.newPageClient)
     }
+    if(message.reconnect){
+      socket.disconnect(true)
+      connectToServer()
+    }
 
   });
 
@@ -66,92 +71,94 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
 // var socket = io('https://hitchhiker.glitch.me')
 //PRODUCTION SERVER
 // var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
-var serverURL = $.ajax({
+
+connectToServer();
+function connectToServer(){
+  var serverURL = $.ajax({
                     url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentServer.txt",
                     async: false
                  }).responseText;
-
-let socket = io(serverURL)
-// socket.on('connect_error', function(){
-//     console.log("connection error, switching to backup server")
-//     socket = io('https://hitchhiker.glitch.me')
-// })
-socket.on('guideEvent', function(data){
-  if(data.type == "topSites"){
-    if(USER.role == "guide"){return false};
-    chrome.topSites.get(function(sites){
-      data.url=sites[data.num].url
-    })
-  }
-  if(data.type == "playSound"){
-    console.log(data.src)
-    var audio = new Audio(data.src)
-    audio.loop = data.loop;
-    audioTracks.push(audio)
-    audioTracks[audioTracks.length-1].play()
-    socket.emit("status", {msg:"playSound"})
-    return false;
-  }
-  if(data.type == "stopAudio"){
-    for (var i = 0; i < audioTracks.length; i++) {
-      audioTracks[i].pause();
+  socket = io(serverURL)
+  // socket.on('connect_error', function(){
+  //     console.log("connection error, switching to backup server")
+  //     socket = io('https://hitchhiker.glitch.me')
+  // })
+  socket.on('guideEvent', function(data){
+    if(data.type == "topSites"){
+      if(USER.role == "guide"){return false};
+      chrome.topSites.get(function(sites){
+        data.url=sites[data.num].url
+      })
     }
-    return false
-  }
-  if(data.type == "deleteRecent"){
-    if(audioTracks.length > 0){
-      var stopAudio = audioTracks.pop()
-      stopAudio.pause()
+    if(data.type == "playSound"){
+      console.log(data.src)
+      var audio = new Audio(data.src)
+      audio.loop = data.loop;
+      audioTracks.push(audio)
+      audioTracks[audioTracks.length-1].play()
+      socket.emit("status", {msg:"playSound"})
+      return false;
     }
-    return false
-  }
-  if(data.type == "speakText"){
-    speakText(data.msg)
-  }
-  messageToTab(data)
-  console.log(data)
-})
-socket.on('toClient', function(data){
-  chrome.runtime.sendMessage(data)
-})
-socket.on('status', function(data){
-  console.log("status received")
-  chrome.runtime.sendMessage(data)
-})
-socket.on('newPage', function(data){
-	newPage(data.url)
-})
-socket.on('newMsg', function(data){
-	addMsg(data.username, data.msg, data.color)
-	//speakText(data.msg)
-	chrome.runtime.sendMessage({newMsg: data})
-  if(USER.performanceTab)
-    chrome.tabs.sendMessage(USER.performanceTab, {newMsg: data});
+    if(data.type == "stopAudio"){
+      for (var i = 0; i < audioTracks.length; i++) {
+        audioTracks[i].pause();
+      }
+      return false
+    }
+    if(data.type == "deleteRecent"){
+      if(audioTracks.length > 0){
+        var stopAudio = audioTracks.pop()
+        stopAudio.pause()
+      }
+      return false
+    }
+    if(data.type == "speakText"){
+      speakText(data.msg)
+    }
+    messageToTab(data)
+    console.log(data)
+  })
+  socket.on('toClient', function(data){
+    chrome.runtime.sendMessage(data)
+  })
+  socket.on('status', function(data){
+    console.log("status received")
+    chrome.runtime.sendMessage(data)
+  })
+  socket.on('newPage', function(data){
+  	newPage(data.url)
+  })
+  socket.on('newMsg', function(data){
+  	addMsg(data.username, data.msg, data.color)
+  	//speakText(data.msg)
+  	chrome.runtime.sendMessage({newMsg: data})
+    if(USER.performanceTab)
+      chrome.tabs.sendMessage(USER.performanceTab, {newMsg: data});
 
-})
-socket.on('changeText', function(data){
-	console.log('message received')
-	changeText(data.newText)
-	speakText(data.newText)
-})
-socket.on('becomeGuide', function(data){
-  USER.role = "guide"
-  sync()
-  console.log("i am a guide now")
-  chrome.runtime.sendMessage({restartAsGuide:true})
-})
-socket.on("becomeAudience", function(){
-    USER.role = "audience"
+  })
+  socket.on('changeText', function(data){
+  	console.log('message received')
+  	changeText(data.newText)
+  	speakText(data.newText)
+  })
+  socket.on('becomeGuide', function(data){
+    USER.role = "guide"
     sync()
-    console.log("i am audience now")
-    chrome.runtime.sendMessage({restartAsAudience:true})
-})
-        
-    
-socket.on('disconnect', function(){
-  chrome.runtime.sendMessage({disconnected:true})
-})
-
+    console.log("i am a guide now")
+    chrome.runtime.sendMessage({restartAsGuide:true})
+  })
+  socket.on("becomeAudience", function(){
+      USER.role = "audience"
+      sync()
+      console.log("i am audience now")
+      chrome.runtime.sendMessage({restartAsAudience:true})
+  })
+          
+      
+  socket.on('disconnect', function(){
+    chrome.runtime.sendMessage({disconnected:true})
+  })
+}
 //functions
 function changeText(str){
 	messageToTab({changeText: str})
