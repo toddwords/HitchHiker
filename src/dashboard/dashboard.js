@@ -5,11 +5,7 @@ chrome.storage.local.get(function(data){
 	USER = data;
 	currentPerformance = USER.currentPerformance
 	$('#roomName').text(USER.room)
-	var perfs = Object.keys(USER.performances)
-	for (var i = 0; i < perfs.length; i++) {
-		$('#performanceList').append("<option>"+perfs[i]+"</option>")
-	}
-	$('#performanceList').val(currentPerformance)
+	fillPerformances()
 	fillURLs()
 	fillActions()
 	loadEventHandlers()
@@ -61,16 +57,30 @@ function loadEventHandlers(){
 		var perfName = prompt("Name your performance:")
 		USER.performances[perfName] = {"urlList":[]}
 		$('#performanceList').prepend("<option>"+perfName+"</option>").val(perfName).trigger("change")
-		chrome.storage.local.set(USER)
+		sync()
 		fillURLs();
+	})
+	$('#exportPerformance').click(exportPerformance)
+	$('#importButton').click(function(){
+		$('#importButton').hide()
+		$('#importPerformance').fadeIn()
+		$('#importPerformance').change(getFile)
+	})
+	$('#removePerformance').click(function(){
+		if(confirm("Are you sure you want to delete "+ USER.currentPerformance + "?")){
+			let toRemove = USER.currentPerformance
+			delete USER.performances[USER.currentPerformance]
+			$('#performanceList option:selected').remove();
+			$('#performanceList').trigger("change")
+		}
 	})
 	$('#performanceList').change(function(){
 		$('#performanceURLs').empty()
 		console.log("change handler running")
 		currentPerformance = $('#performanceList').val()
-		fillURLs()
 		USER.currentPerformance = currentPerformance;
-		chrome.storage.local.set(USER);
+		fillURLs()
+		sync()
 	})
 	$('#addWebsiteDashboard').click(function(){
 		var newURL = $('#newURL').val().trim();
@@ -131,6 +141,14 @@ function loadEventHandlers(){
 	})
 
 }
+function fillPerformances(){
+	var perfs = Object.keys(USER.performances)
+	$('#perormanceList').empty()
+	for (var i = 0; i < perfs.length; i++) {
+		$('#performanceList').append("<option>"+perfs[i]+"</option>")
+	}
+	$('#performanceList').val(currentPerformance)
+}
 function fillURLs(){
 	var urls = USER.performances[currentPerformance].urlList;
 	$('#performanceURLs, #urlList').empty()
@@ -159,6 +177,19 @@ function fillUsers(){
 	}
 }
 
+function exportPerformance(){
+	let perf = USER.performances[USER.currentPerformance]
+	download(JSON.stringify(perf), USER.currentPerformance + ".hitch")
+}
+function download(content, fileName) {
+    var a = document.createElement("a");
+    var file = new Blob([content], {type: "text/plain"});
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
+}
+
+
 function arraySwap(arr, index1, index2){
 	[arr[index1], arr[index2]] = [arr[index2], arr[index1]];
 }
@@ -172,6 +203,37 @@ function isURL(str) {
   }
 }
 
+
+function getFile(event) {
+	const input = event.target
+  if ('files' in input && input.files.length > 0) {
+	  importFileContent(input.files[0])
+  }
+}
+
+function importFileContent( file) {
+	console.log(file)
+	let fileName = file.name;
+	readFileContent(file).then(content => {
+	  	newPerformance = JSON.parse(content);
+	  	perfName = fileName.split(".hitch")[0]
+		USER.performances[perfName] = newPerformance
+		$('#performanceList').prepend("<option>"+perfName+"</option>").val(perfName).trigger("change")
+		sync()
+		fillURLs();
+	  	$('#importPerformance').hide()
+	  	$('#importButton').show()
+  }).catch(error => console.log(error))
+}
+
+function readFileContent(file) {
+	const reader = new FileReader()
+  return new Promise((resolve, reject) => {
+    reader.onload = event => resolve(event.target.result)
+    reader.onerror = error => reject(error)
+    reader.readAsText(file)
+  })
+}
 function sync(){
 	chrome.storage.local.set(USER)
 }
