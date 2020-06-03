@@ -152,13 +152,14 @@ $(document).keydown(function(e){
 		console.log("togglingChat")
 	}
 	if(guide){
-		if(e.key=="D"){
-			// relay({type:"toggleDrawing"})
-			// toggleDrawing()
-			// console.log("toggling drawing")
+		if(e.ctrlKey && e.which == 37){
+			prevWebsite()
 		}
 		else if(e.ctrlKey && e.which == 39){
 			nextWebsite()
+		}
+		else if(e.ctrlKey && e.which == 40){
+			addWebsite()
 		}
 	}
 	if(graffiti && (guide||groupEdit) && $('#chatInput').length < 1){
@@ -265,13 +266,22 @@ function dance(){
 function stopAnimation(){
 	$('img, p, h1,h2,h3,h4,h5,h6, a, li').removeClass('animate dance dance2 fastPulse slowTop')
 }
+function prevWebsite(){
+	USER.counter--;
+	if(USER.counter < 0){USER.counter=0}
+	chrome.storage.local.set({counter: USER.counter})
+	window.location = urlList[USER.counter]
+}
 function nextWebsite(){
 	USER.counter++;
 	if(USER.counter >= urlList.length){USER.counter=0}
 	chrome.storage.local.set({counter: USER.counter})
 	window.location = urlList[USER.counter]
 }
-
+function addWebsite(){
+	USER.performances[USER.currentPerformance].urlList.push(location.href)
+	sync()
+}
 function addChatBubble(username,msg,color){
 	if($('#chatDiv').length < 1){
 		$('body').prepend("<div id='chatDiv'></div>")
@@ -404,6 +414,9 @@ function speakText(str){
 }
 function relay(obj){
 	chrome.runtime.sendMessage({socketEvent: "guideEvent", data: obj })
+}
+function sync(){
+	chrome.storage.local.set(USER)
 }
 
 function randRange(min,max){
