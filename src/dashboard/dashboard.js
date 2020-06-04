@@ -29,9 +29,10 @@ chrome.storage.onChanged.addListener(function(){
 
 chrome.runtime.onMessage.addListener(function(message){
 	if(message.users){
+		console.log(message.users)
 		USER.users = message.users;
 		sync();
-		// fillUsers();
+		fillUsers(message.users);
 	}
 	if(message.type == "status"){
 		var nameInList = false;
@@ -44,7 +45,7 @@ chrome.runtime.onMessage.addListener(function(message){
 				nameInList = true;
 			}
 		})
-		if(!nameInList)
+		if(!nameInList && message.username != USER.username)
 			$('#audienceList').append("<option id='"+message.username+"'>"+message.username + " - "+message.msg+"</option>")
 		}
 	}
@@ -163,18 +164,24 @@ function fillActions(){
 	var actions = USER.performances[currentPerformance].actions
 	$("#actionList").empty()
 	for (var i = 0; i < actions.length; i++) {
-		var actionString = actions[i].fn
-		if(typeof actions[i].params[0] == "string")
-			actionString += ": "+actions[i].params[0]
-		$('#actionList').append("<option>"+actionString+"</option>")
+		if(actions[i]){
+			var actionString = actions[i].fn
+			if(typeof actions[i].params[0] == "string")
+				actionString += ": "+actions[i].params[0]
+			$('#actionList').append("<option>"+actionString+"</option>")
+		}
 	}
 }
-function fillUsers(){
-	var users = USER.users ? USER.users : [];
-	$('#audienceList').empty()
+function fillUsers(users){
 	for (var i = 0; i < users.length; i++) {
+		if($("#audienceList #"+users[i]).length > 0 || users[i] == USER.username){continue}
 		$('#audienceList').append("<option id='"+users[i]+"'>"+users[i]+"</option>")
 	}
+	$('#audienceList option').each(function(){
+		if(!users.includes($(this).attr("id"))){
+			$(this).remove()
+		}
+	})
 }
 
 function exportPerformance(){
@@ -191,7 +198,15 @@ function download(content, fileName) {
 
 
 function arraySwap(arr, index1, index2){
-	[arr[index1], arr[index2]] = [arr[index2], arr[index1]];
+	if(index2 >= arr.length){
+		arr.pop().unshift()
+	}
+	else if(index2 < 0){
+		arr.shift().push()
+	}
+	else{
+		[arr[index1], arr[index2]] = [arr[index2], arr[index1]];
+	}
 }
 
 function isURL(str) {

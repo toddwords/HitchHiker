@@ -45,6 +45,9 @@ function bindGuideActions(){
 		toggleGroupEdit()
 		save({fn:"toggleGroupEdit", params:[]})
 	})
+	$('#multiMouse button').click(function(){
+		sendAction({type:"multiMouse"})
+	})
 	$('#scrollSync').prop("checked", USER.scrollSync)
 	$('#scrollSync').change(function(){
 		USER.scrollSync = $(this).prop("checked")
@@ -200,6 +203,12 @@ function addWebsite(){
 		$('#urlList').append("<option>"+tabs[0].url+"</option>")
 		sync()
 	})
+}
+
+function sendAction(obj){
+	if(!obj.params) obj.params = []
+	relay(obj)
+	save(obj)
 }
 
 function save(obj){

@@ -78,6 +78,7 @@ function connectToServer(){
                     url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentServer.txt",
                     async: false
                  }).responseText;
+  console.log(serverURL)
   socket = io(serverURL)
   // socket.on('connect_error', function(){
   //     console.log("connection error, switching to backup server")

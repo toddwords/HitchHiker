@@ -11,6 +11,7 @@ var clearEditBorder;
 var USER;
 var drawingCanvas;
 var urlList;
+var multiMouseToggle = false;
 setTimeout(siteSpecific, 3000);
 chrome.storage.local.get(function(data){
 	USER = data;
@@ -115,6 +116,7 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 			console.log("scroll syncing")
 		}
 		if(message.type && message.params){
+			console.log(message.type)
 			let func = window[message.type];
 			console.log(func)
 			if(typeof func == "function") func.apply(null, message.params)
@@ -129,6 +131,7 @@ $('*').click(function(e){
 		console.log(e)
 		if(currentEl !== e.target){
 			allowClick = false;
+			relay({type:"removeEditBorder", elPath:elPath})
 			currentEl = e.target
 			currentText = ""
 			contentChanges = [];
@@ -408,7 +411,28 @@ function drawingSketch(P5){
 		// P5.ellipse(data.x, data.y, data.size, data.size)
 	}
 }
+function multiMouse(){
+	multiMouseToggle = !multiMouseToggle
+	if(multiMouseToggle){
+		$(document).mousemove(function(e){
+			relay({type: "onMoveMultiMouse", params: [USER.id, (e.clientX+window.scrollX)/document.body.scrollWidth, (e.clientY+window.scrollY)/document.body.scrollHeight]})
+		})
+	}
+	else{
+		$(document).off(mousemove)
+	}
+}
 
+function onMoveMultiMouse(userId,x,y){
+	if(userId != USER.id){
+		if($('#'+userId).length < 1){
+			let cursorImg = $('<img />').attr('src', chrome.runtime.getURL("assets/cursor.png")).attr('id', userId).css({top:y*document.body.scrollHeight,left:x*document.body.scrollWidth}).addClass('multiMouse')
+			$('body').prepend(cursorImg)
+		} else {
+			$('#'+userId).css({top:y*document.body.scrollHeight, left:x*document.body.scrollWidth})
+		}
+	}
+}
 function speakText(str){
 	chrome.runtime.sendMessage({speakText:str})
 }
@@ -450,11 +474,8 @@ function sanitize(string) {
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#x27;',
-      "/": '&#x2F;',
   };
-  const reg = /[&<>"'/]/ig;
+  const reg = /[&<>]/ig;
   return string.replace(reg, (match)=>(map[match]));
 }
 function checkWebAddress(url) {

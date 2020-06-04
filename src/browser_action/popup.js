@@ -61,13 +61,17 @@ function init(){
 	if(!USER.room){
 		$('#guide,#audience').fadeIn()
 		$('#audience').click(function(){
-			// $('#audience,#guide').hide()
-			//toServer('getRooms')
+			//for private rooms
 			let roomToJoin = prompt("what is the name of the room you'd like to join?")
+			attemptJoinRoom(roomToJoin)
+			//
 			USER.role = "audience"
 			USER.messages = []
 			sync()
-			attemptJoinRoom(roomToJoin)
+			//for public rooms
+			// $('#audience,#guide').hide()
+			// toServer('getRooms')
+			
 		})
 		$('#guide').click(function(){
 			USER.messages = []
@@ -120,6 +124,7 @@ function joinRoom(room){
 	$('#roomList').fadeOut()
 	USER.room = room;
 	chrome.storage.local.set({room:room})
+	toServer("status", {msg:USER.username +" has joined"})
 	afterJoinRoom()
 	chrome.runtime.sendMessage({roomJoined:true})
 }

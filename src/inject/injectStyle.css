@@ -69,6 +69,12 @@
 	z-index: 99999;
 }
 
+.multiMouse {
+	position:absolute;
+	z-index: 999999;
+	width:16px;
+}
+
 .animate {
   animation-iteration-count: infinite;
   animation-direction: alternate;
