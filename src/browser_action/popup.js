@@ -11,7 +11,7 @@ chrome.storage.onChanged.addListener(function(){
 })
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 	if(message.rooms && USER.role == "audience" && !USER.room){
-		showRooms(message.rooms)
+		//showRooms(message.rooms)
 	}
 	if(message.users){
 		// showUsers(message.users)
@@ -60,21 +60,38 @@ function init(){
 	})
 	//check for current performance
  	$.ajax({
-        url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentPerformance.txt",
-        success: function(data){console.log(data); console.log(data.responseText)}
+        url: "http://hitchhiker.glitch.me/currentRoom.txt",
+        success: function(data){if(data.length > 0){
+
+        }}
     });
 	if(!USER.room){
+		$.ajax({
+	        url: "http://hitchhiker.glitch.me/currentRoom.txt",
+	        success: function(data){
+	        	if(data.length > 0){
+	        		$('#roomMessage').html(data)
+	        	}	$('#roomMessage room').click(function(){
+	        					attemptJoinRoom($(this).text())
+	        					USER.role = "audience"
+								USER.messages = []
+								sync()
+	        	})
+	        }
+    	});
 		$('#guide,#audience').fadeIn()
 		$('#audience').click(function(){
 			//for private rooms
+
 			let roomToJoin = prompt("what is the name of the room you'd like to join?")
 			roomToJoin = roomToJoin.toLowerCase()
 			console.log(roomToJoin)
-			attemptJoinRoom(roomToJoin)
-			//
 			USER.role = "audience"
 			USER.messages = []
 			sync()
+			attemptJoinRoom(roomToJoin)
+			//
+			
 			//for public rooms
 			// $('#audience,#guide').hide()
 			// toServer('getRooms')
@@ -131,6 +148,7 @@ function attemptJoinRoom(room){
 function joinRoom(room){
 	$('#audience,#guide').hide()
 	$('#roomList').fadeOut()
+	$('#roomMessage').text("")
 	USER.room = room;
 	chrome.storage.local.set({room:room})
 	toServer("status", {msg:USER.username +" has joined"})

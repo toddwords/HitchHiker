@@ -99,3 +99,12 @@ button {
 	color: red;
 	display:none;
 }
+
+room {
+	font-weight:bold;
+	color:blue;
+}
+room:hover {
+	color:purple;
+	cursor:hand;
+}
