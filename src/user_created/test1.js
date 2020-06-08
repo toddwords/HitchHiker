@@ -5,5 +5,5 @@ function hailSatan(){
 }
 
 function addH1(txt){
-	$('div').append("<h1>"+txt+"</h1>")
+	$('body').prepend("<h1>"+txt+"</h1>")
 }

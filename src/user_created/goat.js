@@ -1,0 +1,3 @@
+function bleat(){
+	alert("AAAAAAAAAAAAHHHHH")
+}

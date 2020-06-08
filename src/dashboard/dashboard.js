@@ -108,7 +108,15 @@ function loadEventHandlers(){
 	})
 	$('#playAction').click(function(){
 		var action = USER.performances[USER.currentPerformance].actions[$('#actionList')[0].selectedIndex]
-		window[action.fn].apply(null,action.params)
+		console.log(action)
+		console.log(window[action.fn])
+		if(typeof window[action.fn] == "function"){
+			window[action.fn].apply(null,action.params)
+		}
+		else {
+			action.type = action.fn
+			relay(action)
+		}
 		var index = $('#actionList')[0].selectedIndex + 1;
 		setTimeout(function(){$('#actionList').focus(); $('#actionList')[0].selectedIndex = index}, 200);
 	})

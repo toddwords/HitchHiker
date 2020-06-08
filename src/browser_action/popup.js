@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 		console.log(message.room + " joined")
 	}
 	if(message.disconnected){
-		reset()
+		// reset()
 		console.log("disconnected")
 	}
 	if(message.restartAsGuide){
@@ -63,6 +63,7 @@ function init(){
 		$('#audience').click(function(){
 			//for private rooms
 			let roomToJoin = prompt("what is the name of the room you'd like to join?")
+			roomToJoin = roomToJoin.toLowerCase()
 			attemptJoinRoom(roomToJoin)
 			//
 			USER.role = "audience"
@@ -78,7 +79,7 @@ function init(){
 			USER.role = "guide"
 			sync()
 			var newRoom = prompt("Name your room: ")
-			attemptJoinRoom(newRoom)
+			attemptJoinRoom(newRoom.toLowerCase())
 		})
 	} 
 	else {
