@@ -58,12 +58,18 @@ function init(){
 	$('#chat').load("../modules/chat.html",function(){
 		chatInit()
 	})
+	//check for current performance
+ 	$.ajax({
+        url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentPerformance.txt",
+        success: function(data){console.log(data); console.log(data.responseText)}
+    });
 	if(!USER.room){
 		$('#guide,#audience').fadeIn()
 		$('#audience').click(function(){
 			//for private rooms
 			let roomToJoin = prompt("what is the name of the room you'd like to join?")
 			roomToJoin = roomToJoin.toLowerCase()
+			console.log(roomToJoin)
 			attemptJoinRoom(roomToJoin)
 			//
 			USER.role = "audience"
@@ -79,7 +85,9 @@ function init(){
 			USER.role = "guide"
 			sync()
 			var newRoom = prompt("Name your room: ")
-			attemptJoinRoom(newRoom.toLowerCase())
+			newRoom = newRoom.toLowerCase()
+			console.log(newRoom)
+			attemptJoinRoom(newRoom)
 		})
 	} 
 	else {
