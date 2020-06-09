@@ -107,15 +107,16 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 			stopAnimation()
 		}
 
-		if(message.type == "runFunction"){
-			var fn = window[message.fn]
-			if (typeof fn === "function") fn.apply(null, message.params);
-		}
+
 		if(message.type == "scrollSync" && !guide){
 			$(window).scrollTop(message.scroll);
 			console.log("scroll syncing")
 		}
-		if(message.type && message.params){
+		if(message.type == "runFunction"){
+			var fn = window[message.fn]
+			if (typeof fn === "function") fn.apply(null, message.params);
+		}
+		else if(message.type && message.params){
 			console.log(message.type)
 			let func = window[message.type];
 			console.log(func)
