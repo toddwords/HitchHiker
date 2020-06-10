@@ -169,11 +169,11 @@ $(document).keydown(function(e){
 	if(graffiti && (guide||groupEdit) && $('#chatInput').length < 1){
 		console.log(currentEl)
 		e.preventDefault()
-		if(e.ctrlKey && e.which == 86){
-			contentChanges.push($(currentEl).text())
-			navigator.clipboard.readText().then(clipText => currentEl.innerText = currentText = clipText);
-		}
-		else if(currentEl && e.ctrlKey && e.which == 90){
+		// if(e.ctrlKey && e.which == 86){
+		// 	contentChanges.push($(currentEl).text())
+		// 	navigator.clipboard.readText().then(clipText => currentEl.innerText = currentText = clipText);
+		// }
+		if(currentEl && e.ctrlKey && e.which == 90){
 			if(contentChanges.length > 0){
 				currentText = contentChanges.pop()
 				$(currentEl).text(currentText);

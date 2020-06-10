@@ -1,9 +1,9 @@
 {
-  "name": "HitchHiker Alpha",
-  "version": "0.7.1",
+  "name": "HitchHiker",
+  "version": "0.9.1",
   "manifest_version": 2,
   "description": "A chrome extension for live performances and guided tours inside your web browser",
-  "homepage_url": "https://hitchhiker-info.glitch.me",
+  "homepage_url": "https://github.com/toddwords/HitchHiker",
   "icons": {
     "16": "icons/hitchhiker.png",
     "48": "icons/hitchhiker.png",
@@ -21,13 +21,9 @@
     "default_popup": "src/browser_action/index.html"
   },
   "permissions": [
-    "history",
     "tabs",
     "tts",
-    "clipboardRead",
-    "clipboardWrite",
     "storage",
-    "topSites",
     "*://*/*"
   ],
   "web_accessible_resources": [
