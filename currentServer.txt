@@ -1,1 +1,1 @@
-http://hitchhiker.us-east-2.elasticbeanstalk.com
+https://hitchhiker-server.herokuapp.com/

@@ -84,6 +84,11 @@ function connectToServer(){
   //     console.log("connection error, switching to backup server")
   //     socket = io('https://hitchhiker.glitch.me')
   // })
+  socket.on('reconnect', () => {
+    if(USER.room){
+      socket.emit("joinRoom", {room:room, username:USER.username, role:USER.role})
+    }
+});
   socket.on('guideEvent', function(data){
     if(data.type == "topSites"){
       if(USER.role == "guide"){return false};
@@ -154,10 +159,11 @@ function connectToServer(){
       console.log("i am audience now")
       chrome.runtime.sendMessage({restartAsAudience:true})
   })
-          
+  
       
-  socket.on('disconnect', function(){
+  socket.on('disconnect', function(reason){
     chrome.runtime.sendMessage({disconnected:true})
+    console.log(reason)
   })
 }
 //functions
