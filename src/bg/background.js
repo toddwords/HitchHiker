@@ -34,7 +34,7 @@ chrome.extension.onMessage.addListener(
   		sendResponse(USER.messages)
   	}
     if(message.isGuide){
-      sendResponse(USER.role == "guide")
+      sendResponse({guide:USER.role == "guide", id:sender.tab.id})
     }
     if(message.roomJoined){
       onJoinRoom()
@@ -54,9 +54,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     console.log(changeInfo)
     if(USER.role == "guide" && tab.url.indexOf('http') >= 0 && changeInfo.url && tabId == USER.performanceTab){
       socket.emit('newPage', {url:tab.url})
-      tab.title = "[HitchHiker] "+tab.title;
+      
     }
     if(tab.url.indexOf('http') >= 0 && changeInfo.status == 'complete' && tab.active){
+      tab.title = "[HitchHiker] "+tab.title;
       console.log(chrome.runtime.getURL('src/user_created/'+USER.room+'.js'))
       chrome.tabs.executeScript(USER.performanceTab,{file:'src/user_created/'+USER.room+'.js'})
     }
@@ -70,7 +71,7 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
 //DEV SERVER
 // var socket = io('https://hitchhiker.glitch.me')
 //PRODUCTION SERVER
-// var socket = io('http://hitchhiker.us-east-2.elasticbeanstalk.com')
+// var socket = io("https://hitchhiker-server.herokuapp.com/")
 
 connectToServer();
 function connectToServer(){
@@ -80,6 +81,8 @@ function connectToServer(){
                  }).responseText;
   console.log(serverURL)
   socket = io(serverURL)
+  // socket = io("https://hitchhiker-server.herokuapp.com/")
+
   // socket.on('connect_error', function(){
   //     console.log("connection error, switching to backup server")
   //     socket = io('https://hitchhiker.glitch.me')
