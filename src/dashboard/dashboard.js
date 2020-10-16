@@ -1,7 +1,9 @@
 var USER;
 var currentPerformance;
 let connection;
-
+navigator.mediaDevices.getUserMedia({audio:true, video:false}).then(()=>{
+	chrome.runtime.sendMessage({startAudioBroadcast:true})
+})
 
 chrome.storage.local.get(function(data){
 	chrome.runtime.sendMessage({socketEvent: "getUsers" })

@@ -41,7 +41,10 @@ chrome.extension.onMessage.addListener(
   		speakText(message.speakText)
   	}
   	if(message.socketEvent){
-  		socket.emit(message.socketEvent, message.data)
+      socket.emit(message.socketEvent, message.data)
+      if(message.socketEvent == "leaveRoom"){
+        connection.leave()
+      }
   		// if(message.socketEvent == 'newMsg'){
     //     if(!message.data.username || !message.data.color){
     //       message.data.username = USER.username;
@@ -66,7 +69,12 @@ chrome.extension.onMessage.addListener(
     }
     if(message.reconnect){
       socket.disconnect(true)
+      connection.leave()
       connectToServer()
+    }
+
+    if(message.startAudioBroadcast && USER.room && USER.role ==  'guide'){
+      connection.open(USER.room)
     }
 
   });
@@ -198,6 +206,7 @@ function connectToServer(){
       
   socket.on('disconnect', function(reason){
     chrome.runtime.sendMessage({disconnected:true})
+    connection.leave();
     console.log(reason)
   })
 }
