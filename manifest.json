@@ -1,13 +1,13 @@
 {
   "name": "HitchHiker",
-  "version": "0.9.1",
+  "version": "0.9.4",
   "manifest_version": 2,
-  "description": "A chrome extension for live performances and guided tours inside your web browser",
+  "description": "A chrome extension for collaboratively surfing the web with others",
   "homepage_url": "https://github.com/toddwords/HitchHiker",
   "icons": {
-    "16": "icons/hitchhiker.png",
-    "48": "icons/hitchhiker.png",
-    "128": "icons/hitchhiker.png"
+    "16": "icons/hitchhiker16.png",
+    "48": "icons/hitchhiker48.png",
+    "128": "icons/hitchhiker128.png"
   },
   "default_locale": "en",
   "background": {

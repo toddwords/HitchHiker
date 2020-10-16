@@ -1,12 +1,34 @@
 var USER;
 var audioTracks = [];
 let socket;
+let connection;
+
 chrome.storage.local.get(function(syncData){
       if(!syncData.id){
-        chrome.storage.local.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[], "actions":[]}}, counter:-1, currentPerformance:"First Performance", "username":false },function(){console.log("initialized")})
+        chrome.storage.local.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[], "actions":[]}}, counter:-1, currentPerformance:"First Performance", "username":false, voices:[], currentVoice: "Google UK English Male" },function(){console.log("initialized")})
       }
       chrome.storage.local.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false, isRecording:false})
-      USER = syncData;
+      let voiceList = [];
+      chrome.tts.getVoices(
+        function(voices) {
+          for (var i = 0; i < voices.length; i++) {
+            if(voices[i].voiceName.indexOf("Google") > -1)
+              voiceList.push(voices[i].voiceName);
+          }
+          for (let index = 0; index < voiceList.length; index++) {
+            if(voiceList[0].indexOf("English") < 0){
+              voiceList.push(voiceList.shift())
+            }
+            else {
+              break;
+            }
+            
+          }
+          syncData.voices = voiceList
+          chrome.storage.local.set({"voices":voiceList})
+          USER = syncData;
+      });
+      
     })
 chrome.storage.onChanged.addListener(function(){
   chrome.storage.local.get(function(data){
@@ -69,18 +91,20 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
   }
 })
 //DEV SERVER
-// var socket = io('https://hitchhiker.glitch.me')
+// var socket = io('https://hitchhiker.glitch.me/')
 //PRODUCTION SERVER
 // var socket = io("https://hitchhiker-server.herokuapp.com/")
 
 connectToServer();
 function connectToServer(){
-  var serverURL = $.ajax({
-                    url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentServer.txt",
-                    async: false
-                 }).responseText;
+  // var serverURL = $.ajax({
+  //                   url: "http://hitchhiker.glitch.me/currentServer.txt",
+  //                   async: false
+  //                }).responseText;
+  var serverURL = "https://hitchhiker.glitch.me/"
   console.log(serverURL)
   socket = io(serverURL)
+  establishRTCConnection(serverURL)
   // socket = io("https://hitchhiker-server.herokuapp.com/")
 
   // socket.on('connect_error', function(){
@@ -89,9 +113,9 @@ function connectToServer(){
   // })
   socket.on('reconnect', () => {
     if(USER.room){
-      socket.emit("joinRoom", {room:room, username:USER.username, role:USER.role})
+      socket.emit("joinRoom", {room:USER.room, username:USER.username, role:USER.role})
     }
-});
+  });
   socket.on('guideEvent', function(data){
     if(data.type == "topSites"){
       if(USER.role == "guide"){return false};
@@ -124,11 +148,19 @@ function connectToServer(){
     if(data.type == "speakText"){
       speakText(data.msg)
     }
+    if(data.type == "setVoice"){
+      chrome.storage.local.set({"currentVoice": data.params[0]})
+			USER.currentVoice = data.params[0]
+    }
     messageToTab(data)
     console.log(data)
   })
   socket.on('toClient', function(data){
-    chrome.runtime.sendMessage(data)
+    if(data.joinRoomSuccess){
+      USER.room = data.room
+      sync()
+    }
+      chrome.runtime.sendMessage(data)
   })
   socket.on('status', function(data){
     console.log("status received")
@@ -207,7 +239,7 @@ function addMsg(user, msg, color){
 }
 
 function speakText(text){
-  	chrome.tts.speak(text, {voiceName: "Google UK English Male", rate: 0.75})
+  	chrome.tts.speak(text, {voiceName: USER.currentVoice, rate: 0.75})
 }
 
  function openNewWindow(newUrl, left, top, time){
@@ -220,13 +252,121 @@ function speakText(text){
 
 function onJoinRoom(){
   createNewPerformanceTab(function(){
-    if(USER.role == "guide")
-      chrome.windows.create({type:"popup",url:chrome.extension.getURL("src/dashboard/index.html"), width:960, height:1080})
-    else
+    if(USER.role == "guide"){
+      chrome.windows.create({type:"popup",url:chrome.extension.getURL("src/dashboard/index.html"), width:960, height:1080});
+      console.log(USER.room)
+      connection.open(USER.room)
+    }
+    else{
       socket.emit("getCurrentPage")
+      connection.sdpConstraints.mandatory = {
+        OfferToReceiveAudio: true,
+        OfferToReceiveVideo: false
+      };
+      connection.join(USER.room)
+    }
   })
 }
 
 function sync(){
   chrome.storage.local.set(USER)
+}
+
+function establishRTCConnection(socketURL){
+  connection = new RTCMultiConnection();
+  connection.socketURL = socketURL
+  connection.socketMessageEvent = 'rtc-connect';
+  connection.session = {
+    audio: true,
+    video: false,
+    oneway: true
+  }
+  connection.sdpConstraints.mandatory = {
+    OfferToReceiveAudio: false,
+    OfferToReceiveVideo: false
+  };
+  connection.iceServers = [{
+  'urls': [
+      'stun:stun.l.google.com:19302',
+      'stun:stun1.l.google.com:19302',
+      'stun:stun2.l.google.com:19302',
+      'stun:stun.l.google.com:19302?transport=udp',
+  ]
+  }];
+  connection.audiosContainer = document.getElementById('audios-container');
+  connection.onstream = function(event) {
+    var existing = document.getElementById(event.streamid);
+    if(existing && existing.parentNode) {
+      existing.parentNode.removeChild(existing);
+    }
+
+    event.mediaElement.removeAttribute('src');
+    event.mediaElement.removeAttribute('srcObject');
+    event.mediaElement.muted = true;
+    event.mediaElement.volume = 0;
+
+    var audio = document.createElement('audio');
+
+    try {
+        audio.setAttributeNode(document.createAttribute('autoplay'));
+        audio.setAttributeNode(document.createAttribute('playsinline'));
+    } catch (e) {
+        audio.setAttribute('autoplay', true);
+        audio.setAttribute('playsinline', true);
+    }
+
+    if(event.type === 'local') {
+      audio.volume = 0;
+      try {
+          audio.setAttributeNode(document.createAttribute('muted'));
+      } catch (e) {
+          audio.setAttribute('muted', true);
+      }
+    }
+    audio.srcObject = event.stream;
+
+    var width = 100;
+    var mediaElement = getHTMLMediaElement(audio, {
+        title: event.userid,
+        buttons: ['full-screen'],
+        width: width,
+        showOnMouseEnter: false
+    });
+
+    connection.audiosContainer.appendChild(mediaElement);
+
+    setTimeout(function() {
+        mediaElement.media.play();
+    }, 5000);
+
+    mediaElement.id = event.streamid;
+};
+connection.onstreamended = function(event) {
+  var mediaElement = document.getElementById(event.streamid);
+  if (mediaElement) {
+      mediaElement.parentNode.removeChild(mediaElement);
+
+      if(event.userid === connection.sessionid && !connection.isInitiator) {
+        alert('Broadcast is ended. We will reload this page to clear the cache.');
+        location.reload();
+      }
+  }
+};
+
+connection.onMediaError = function(e) {
+  if (e.message === 'Concurrent mic process limit.') {
+      if (DetectRTC.audioInputDevices.length <= 1) {
+          alert('Please select external microphone. Check github issue number 483.');
+          return;
+      }
+
+      var secondaryMic = DetectRTC.audioInputDevices[1].deviceId;
+      connection.mediaConstraints.audio = {
+          deviceId: secondaryMic
+      };
+
+      connection.join(connection.sessionid);
+  }
+};
+
 }

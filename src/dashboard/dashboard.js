@@ -1,5 +1,8 @@
 var USER;
 var currentPerformance;
+let connection;
+
+
 chrome.storage.local.get(function(data){
 	chrome.runtime.sendMessage({socketEvent: "getUsers" })
 	USER = data;
@@ -18,6 +21,7 @@ chrome.storage.local.get(function(data){
 	var statusUpdate = setInterval(function(){
 		chrome.runtime.sendMessage({socketEvent:"getUsers"})
 	}, 5000)
+	
 })
 chrome.storage.onChanged.addListener(function(){
 	chrome.storage.local.get(function(data){
@@ -264,3 +268,4 @@ function sync(){
 function relay(obj){
 	chrome.runtime.sendMessage({socketEvent: "guideEvent", data: obj })
 }
+

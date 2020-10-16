@@ -29,6 +29,19 @@ function bindGuideActions(){
 		USER.speakChat = $(this).prop("checked")
 		chrome.storage.local.set({speakChat:$(this).prop("checked")})
 	})
+	$('#setVoice button').click(function(){
+		$('#setVoice').append("<select id='voiceList'></select>")
+		USER.voices.forEach(element => {
+			$('#voiceList').append("<option>"+element+"</option>")
+		});
+		$('#voiceList').val(USER.currentVoice)
+		$('#voiceList').change(function(){
+			console.log($(this).val())
+			// chrome.storage.local.set({"currentVoice": $(this).val()})
+			// USER.currentVoice = $(this).val()
+			sendAction({type:"setVoice", params:[$(this).val()]})
+		})
+	})
 	$('#changeText button').click(function(){
 		save({fn:"changeTxt", params:[$('#changeText input').val()]})
 		changeTxt($('#changeText input').val())
