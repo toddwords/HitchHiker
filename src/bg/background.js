@@ -7,7 +7,7 @@ chrome.storage.local.get(function(syncData){
       if(!syncData.id){
         chrome.storage.local.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[], "actions":[]}}, counter:-1, currentPerformance:"First Performance", "username":false, voices:[], currentVoice: "Google UK English Male" },function(){console.log("initialized")})
       }
-      chrome.storage.local.set({"room":false, "role":false, counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false, isRecording:false})
+      chrome.storage.local.set({"room":false, "role":false, isBroadcasting:false,  counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false, isRecording:false})
       let voiceList = [];
       chrome.tts.getVoices(
         function(voices) {
@@ -41,10 +41,17 @@ chrome.extension.onMessage.addListener(
   		speakText(message.speakText)
   	}
   	if(message.socketEvent){
+        // if(message.data.type == "startBroadcast"){
+        //   console.log("opening connection")
+        //   connection.open(USER.room, function(){
+        //     socket.emit(message.socketEvent, message.data)
+        //   })
+        //   // return false
+        // }
+        if(message.socketEvent == "leaveRoom"){
+          connection.leave()
+        }
       socket.emit(message.socketEvent, message.data)
-      if(message.socketEvent == "leaveRoom"){
-        connection.leave()
-      }
   		// if(message.socketEvent == 'newMsg'){
     //     if(!message.data.username || !message.data.color){
     //       message.data.username = USER.username;
@@ -72,9 +79,11 @@ chrome.extension.onMessage.addListener(
       connection.leave()
       connectToServer()
     }
-
-    if(message.startAudioBroadcast && USER.room && USER.role ==  'guide'){
+    if(message.canBroadcast){
       connection.open(USER.room)
+    }
+    if(message.createPerformanceTab){
+      createNewPerformanceTab(()=>{socket.emit("getCurrentPage")}, false)
     }
 
   });
@@ -86,7 +95,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       socket.emit('newPage', {url:tab.url})
       
     }
-    if(tab.url.indexOf('http') >= 0 && changeInfo.status == 'complete' && tab.active){
+    if(tab.url.indexOf('http') >= 0 && changeInfo.status == 'complete' && tabId == USER.performanceTab){
       tab.title = "[HitchHiker] "+tab.title;
       console.log(chrome.runtime.getURL('src/user_created/'+USER.room+'.js'))
       chrome.tabs.executeScript(USER.performanceTab,{file:'src/user_created/'+USER.room+'.js'})
@@ -95,7 +104,8 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
   if(tabId == USER.performanceTab){
-    createNewPerformanceTab();
+    USER.performanceTab = false;
+    sync()
   }
 })
 //DEV SERVER
@@ -105,13 +115,14 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
 
 connectToServer();
 function connectToServer(){
-  // var serverURL = $.ajax({
-  //                   url: "http://hitchhiker.glitch.me/currentServer.txt",
-  //                   async: false
-  //                }).responseText;
-  var serverURL = "https://hitchhiker.glitch.me/"
+  var serverURL = $.ajax({
+                    url: "http://hitchhiker.glitch.me/currentServer.txt",
+                    async: false
+                 }).responseText;
+  // var serverURL = "https://hitchhiker.glitch.me/"
   console.log(serverURL)
   socket = io(serverURL)
+  chrome.storage.local.set({"serverURL":serverURL});
   establishRTCConnection(serverURL)
   // socket = io("https://hitchhiker-server.herokuapp.com/")
 
@@ -152,6 +163,17 @@ function connectToServer(){
         stopAudio.pause()
       }
       return false
+    }
+    if(data.type == "startBroadcast" && USER.room && USER.role !== "guide"){
+      console.log("broadcast start")
+      connection.sdpConstraints.mandatory = {
+        OfferToReceiveAudio: true,
+        OfferToReceiveVideo: false
+      };
+      connection.join(USER.room)
+    }
+    if(data.type == "stopBroadcast" ){
+      connection.leave()
     }
     if(data.type == "speakText"){
       speakText(data.msg)
@@ -233,8 +255,8 @@ function updatePage(newURL){
   addMsg(data.username, data.msg, data.color)
   chrome.runtime.sendMessage({newMsg: data})
 }
-function createNewPerformanceTab(callback=function(){}){
-  chrome.tabs.update({url:"https://hitchhiker.glitch.me/start.html", active:true},function(tab){
+function createNewPerformanceTab(callback=function(){}, active=true){
+  chrome.tabs.create({url:"https://hitchhiker.glitch.me/start.html", active:active},function(tab){
     USER.performanceTab = tab.id;
     chrome.storage.local.set({performanceTab:tab.id})
     console.log("performance tab created with id " + USER.performanceTab)
@@ -264,7 +286,7 @@ function onJoinRoom(){
     if(USER.role == "guide"){
       chrome.windows.create({type:"popup",url:chrome.extension.getURL("src/dashboard/index.html"), width:960, height:1080});
       console.log(USER.room)
-      connection.open(USER.room)
+      // connection.open(USER.room)
     }
     else{
       socket.emit("getCurrentPage")

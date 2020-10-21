@@ -109,7 +109,8 @@ function bindGuideActions(){
 	$('#stopLast').click(function(){
 		stopLastAudio()
 		save({fn:"stopLastAudio", params:[]})
-	})
+	});
+
 	$('#runFunction').click(function(){
 		runFunction($('#runFunc').val().trim())
 		save({fn:"runFunction", params:[$('#runFunc').val().trim()]})

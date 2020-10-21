@@ -17,19 +17,19 @@ chrome.storage.local.get(function(data){
 	USER = data;
 	console.log(USER.performances[USER.currentPerformance].urlList)
 	urlList = USER.performances[USER.currentPerformance].urlList;
-
+	chrome.runtime.sendMessage({isGuide:"ask"}, function(answer){
+		guide = answer.guide;
+		if(answer.id == USER.performanceTab){
+			$('title').text("[HitchHiker] "+ $('title').text())
+		}
+	})
 })
 chrome.storage.onChanged.addListener(function(){
 	chrome.storage.local.get(function(data){
 		USER = data;
 	})
 })
-chrome.runtime.sendMessage({isGuide:"ask"}, function(answer){
-	guide = answer.guide;
-	if(answer.id == USER.performanceTab){
-		$('title').text("[HitchHiker] "+ $('title').text())
-	}
-})
+
 chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 		if(message.changeText){
 			changeText(message.changeText)

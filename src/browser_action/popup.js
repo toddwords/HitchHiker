@@ -173,6 +173,11 @@ function afterJoinRoom(){
 	$('#currentRoom').html("<strong>Currently <em>"+USER.role+"</em> in <em>"+USER.room+"</em>")
 	$('#mainDiv').fadeIn()
 	$('#reset').text("Leave Room")
+	setTimeout(function(){
+		if(!USER.performanceTab){
+			chrome.runtime.sendMessage({createPerformanceTab:true})
+		}
+	})
 
 	
 }

@@ -14,6 +14,7 @@
 		display:none;
 	}
 </style>
+<div id="audios-container"></div>
 <h2>Guide Dashboard</h2>
 <p><strong>Current Room: </strong><span id="roomName"></span></p>
 <div class="masonry">
@@ -32,7 +33,9 @@
 	<h3>Saved Actions</h3>
 	<p><select size="7" id="actionList"></select></p>
 	<p><button id="playAction">Play</button><button id="actionUp">&uarr;</button><button id="actionDown">&darr;</button><button id="actionDel">Remove</button></p>
-
+	<div id="voiceBroadcast">
+		<button>Voice Broadcasting: <span>Off</span></button>
+	</div>
 </div>
 <div id="actions" class='masonry-brick'>
 </div>
@@ -44,7 +47,7 @@
 	<button id ="swapGuide">Swap Guide</button>
 </div>
 <div id="chat" class='masonry-brick'></div>
-
+<script type="text/javascript" src="../../js/socket.io.js"></script>
 <script src='/js/jquery-3.3.1.js'></script>
 <script type="text/javascript" src="../../js/RTCMultiConnection.min.js"></script>
 <script src='../modules/guideActions.js'></script>

@@ -1,9 +1,8 @@
 var USER;
 var currentPerformance;
 let connection;
-navigator.mediaDevices.getUserMedia({audio:true, video:false}).then(()=>{
-	chrome.runtime.sendMessage({startAudioBroadcast:true})
-})
+let socket;
+
 
 chrome.storage.local.get(function(data){
 	chrome.runtime.sendMessage({socketEvent: "getUsers" })
@@ -23,7 +22,8 @@ chrome.storage.local.get(function(data){
 	var statusUpdate = setInterval(function(){
 		chrome.runtime.sendMessage({socketEvent:"getUsers"})
 	}, 5000)
-	
+	socket = io(USER.serverURL)
+	establishRTCConnection(USER.serverURL)
 })
 chrome.storage.onChanged.addListener(function(){
 	chrome.storage.local.get(function(data){
@@ -145,6 +145,35 @@ function loadEventHandlers(){
 	$('#actionList').keyup(function(e){
 		if(e.which == 32)
 			$('#playAction').trigger("click")
+	})
+	setBroadcastButton()
+	$('#voiceBroadcast button').click(function(){
+		if(USER.isBroadcasting){
+			relay({type:"stopBroadcast"})
+			connection.leave();
+			USER.isBroadcasting = false;
+			setBroadcastButton()
+		}
+		else {
+			if(connection.waitingForLocalMedia){
+				navigator.mediaDevices.getUserMedia({audio:true, video:false}).then(()=>{
+					connection.open(USER.room, () =>{
+						USER.isBroadcasting = true;
+						relay({type:"startBroadcast"})
+						setBroadcastButton()
+					})
+					
+				})
+			} else {
+				connection.open(USER.room, () =>{
+					USER.isBroadcasting = true;
+					relay({type:"startBroadcast"})
+					setBroadcastButton()
+				})
+			}
+		}
+		
+		sync()
 	})
 	$('#addGuide').click(function(){
 		var username = $('#audienceList').children(":selected").attr("id")
@@ -271,3 +300,110 @@ function relay(obj){
 	chrome.runtime.sendMessage({socketEvent: "guideEvent", data: obj })
 }
 
+function establishRTCConnection(socketURL){
+	connection = new RTCMultiConnection();
+	connection.socketURL = socketURL
+	connection.socketMessageEvent = 'rtc-connect';
+	connection.session = {
+	  audio: true,
+	  video: false,
+	  oneway: true
+	}
+	connection.sdpConstraints.mandatory = {
+	  OfferToReceiveAudio: false,
+	  OfferToReceiveVideo: false
+	};
+	connection.iceServers = [{
+	'urls': [
+		'stun:stun.l.google.com:19302',
+		'stun:stun1.l.google.com:19302',
+		'stun:stun2.l.google.com:19302',
+		'stun:stun.l.google.com:19302?transport=udp',
+	]
+	}];
+	connection.audiosContainer = document.getElementById('audios-container');
+	connection.onstream = function(event) {
+	  var existing = document.getElementById(event.streamid);
+	  if(existing && existing.parentNode) {
+		existing.parentNode.removeChild(existing);
+	  }
+  
+	  event.mediaElement.removeAttribute('src');
+	  event.mediaElement.removeAttribute('srcObject');
+	  event.mediaElement.muted = true;
+	  event.mediaElement.volume = 0;
+  
+	  var audio = document.createElement('audio');
+  
+	  try {
+		  audio.setAttributeNode(document.createAttribute('autoplay'));
+		  audio.setAttributeNode(document.createAttribute('playsinline'));
+	  } catch (e) {
+		  audio.setAttribute('autoplay', true);
+		  audio.setAttribute('playsinline', true);
+	  }
+  
+	  if(event.type === 'local') {
+		audio.volume = 0;
+		try {
+			audio.setAttributeNode(document.createAttribute('muted'));
+		} catch (e) {
+			audio.setAttribute('muted', true);
+		}
+	  }
+	  audio.srcObject = event.stream;
+  
+	  var width = 100;
+	  var mediaElement = getHTMLMediaElement(audio, {
+		  title: event.userid,
+		  buttons: ['full-screen'],
+		  width: width,
+		  showOnMouseEnter: false
+	  });
+  
+	  connection.audiosContainer.appendChild(mediaElement);
+  
+	  setTimeout(function() {
+		  mediaElement.media.play();
+	  }, 5000);
+  
+	  mediaElement.id = event.streamid;
+  };
+  connection.onstreamended = function(event) {
+	var mediaElement = document.getElementById(event.streamid);
+	if (mediaElement) {
+		mediaElement.parentNode.removeChild(mediaElement);
+  
+		if(event.userid === connection.sessionid && !connection.isInitiator) {
+		  alert('Broadcast is ended. We will reload this page to clear the cache.');
+		  location.reload();
+		}
+	}
+  };
+  
+  connection.onMediaError = function(e) {
+	if (e.message === 'Concurrent mic process limit.') {
+		if (DetectRTC.audioInputDevices.length <= 1) {
+			alert('Please select external microphone. Check github issue number 483.');
+			return;
+		}
+  
+		var secondaryMic = DetectRTC.audioInputDevices[1].deviceId;
+		connection.mediaConstraints.audio = {
+			deviceId: secondaryMic
+		};
+  
+		connection.join(connection.sessionid);
+	}
+  };
+  
+  }
+  function setBroadcastButton(){
+	if(USER.isBroadcasting){
+		$('#voiceBroadcast button').css("background-color", "rgba(255,0,0,0.3)")
+		$('#voiceBroadcast span').text("On")
+	} else {
+		$('#voiceBroadcast button').css("background-color", "")
+		$('#voiceBroadcast span').text("Off")
+	}
+}
