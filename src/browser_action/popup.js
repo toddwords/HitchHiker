@@ -36,6 +36,12 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 		$('#guideTools').fadeOut()
 		init()
 	}
+	if(message.reset){
+		USER.role = false;
+		USER.room = false;
+		sync()
+		location.reload()
+	}
 })
 
 //event handlers
@@ -60,14 +66,14 @@ function init(){
 	})
 	//check for current performance
  	$.ajax({
-        url: "http://hitchhiker.glitch.me/currentRoom.txt",
+        url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/status.txt",
         success: function(data){if(data.length > 0){
 
         }}
     });
 	if(!USER.room){
 		$.ajax({
-	        url: "http://hitchhiker.glitch.me/currentRoom.txt",
+	        url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/status.txt",
 	        success: function(data){
 	        	if(data.length > 0){
 	        		$('#roomMessage').html(data)
@@ -173,11 +179,15 @@ function afterJoinRoom(){
 	$('#currentRoom').html("<strong>Currently <em>"+USER.role+"</em> in <em>"+USER.room+"</em>")
 	$('#mainDiv').fadeIn()
 	$('#reset').text("Leave Room")
+	if(USER.role == "guide"){
+		showGuideTools()
+		$('#reset').text("Close Room")
+	}
 	setTimeout(function(){
 		if(!USER.performanceTab){
 			chrome.runtime.sendMessage({createPerformanceTab:true})
 		}
-	})
+	},200)
 
 	
 }

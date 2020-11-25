@@ -97,8 +97,9 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     }
     if(tab.url.indexOf('http') >= 0 && changeInfo.status == 'complete' && tabId == USER.performanceTab){
       tab.title = "[HitchHiker] "+tab.title;
-      console.log(chrome.runtime.getURL('src/user_created/'+USER.room+'.js'))
-      chrome.tabs.executeScript(USER.performanceTab,{file:'src/user_created/'+USER.room+'.js'})
+      //to run user enabled scripts
+      // console.log(chrome.runtime.getURL('src/user_created/'+USER.room+'.js'))
+      // chrome.tabs.executeScript(USER.performanceTab,{file:'src/user_created/'+USER.room+'.js'})
     }
 });
 
@@ -115,11 +116,11 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
 
 connectToServer();
 function connectToServer(){
-  var serverURL = $.ajax({
-                    url: "http://hitchhiker.glitch.me/currentServer.txt",
-                    async: false
-                 }).responseText;
-  // var serverURL = "https://hitchhiker.glitch.me/"
+  // var serverURL = $.ajax({
+  //                   url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentServer.txt",
+  //                   async: false
+  //                }).responseText;
+  var serverURL = "https://hitchhiker.glitch.me/"
   console.log(serverURL)
   socket = io(serverURL)
   chrome.storage.local.set({"serverURL":serverURL});
@@ -196,6 +197,10 @@ function connectToServer(){
     console.log("status received")
     chrome.runtime.sendMessage(data)
   })
+  socket.on('heartbeat', function(data){
+    console.log(data)
+    chrome.runtime.sendMessage({heartbeat:true, "data":data})
+  })
   socket.on('newPage', function(data){
   	newPage(data.url)
   })
@@ -224,7 +229,12 @@ function connectToServer(){
       console.log("i am audience now")
       chrome.runtime.sendMessage({restartAsAudience:true})
   })
-  
+  socket.on('reset', function(){
+    USER.room = false;
+    USER.role = false;
+    sync()
+    chrome.runtime.sendMessage({reset:true})
+  })
       
   socket.on('disconnect', function(reason){
     chrome.runtime.sendMessage({disconnected:true})
@@ -249,7 +259,7 @@ function newPage(newURL){
 function updatePage(newURL){
   chrome.tabs.update(USER.performanceTab, {url:newURL, active:true}, function(tab){
       tab.title = "[HitchHiker] "+tab.title;
-      socket.emit("status", {msg:"currently on "+tab.url})  
+      socket.emit("status", {msg:"currently on "+newURL})  
   })
   var data = {username:"server",msg:"Going to " + newURL,color:[127,127,127]}
   addMsg(data.username, data.msg, data.color)
@@ -312,6 +322,8 @@ function establishRTCConnection(socketURL){
     video: false,
     oneway: true
   }
+	connection.mediaConstraints.video = false
+
   connection.sdpConstraints.mandatory = {
     OfferToReceiveAudio: false,
     OfferToReceiveVideo: false

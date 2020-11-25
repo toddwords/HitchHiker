@@ -110,11 +110,18 @@ function bindGuideActions(){
 		stopLastAudio()
 		save({fn:"stopLastAudio", params:[]})
 	});
-
-	$('#runFunction').click(function(){
-		runFunction($('#runFunc').val().trim())
-		save({fn:"runFunction", params:[$('#runFunc').val().trim()]})
+	$('#inviteLobby').click(function(){
+		toServer("inviteLobby")
+		$(this).text("Invite Sent")
+		$(this).prop("disabled", true)
+		setTimeout(function(){
+			$('#inviteLobby').prop('disabled', false).text("Send Invite to Lobby")
+		},10000)
 	})
+	// $('#runFunction').click(function(){
+	// 	runFunction($('#runFunc').val().trim())
+	// 	save({fn:"runFunction", params:[$('#runFunc').val().trim()]})
+	// })
 	$('#recordActions').prop("checked", USER.isRecording)
 	$('#recordActions').change(function(){
 		USER.isRecording = $(this).prop("checked")
@@ -195,7 +202,9 @@ function stopLastAudio(){
 function goTopSite(num){
 		relay({type:"topSites", num: num})
 }
-
+function toServer(eName, obj={}){
+	chrome.runtime.sendMessage({socketEvent: eName, data: obj })
+}
 
 function choice(arr){
 	return arr[Math.floor(Math.random() * arr.length)]

@@ -5,7 +5,7 @@ let socket;
 
 
 chrome.storage.local.get(function(data){
-	chrome.runtime.sendMessage({socketEvent: "getUsers" })
+	// chrome.runtime.sendMessage({socketEvent: "getUsers" })
 	USER = data;
 	currentPerformance = USER.currentPerformance
 	$('#roomName').text(USER.room)
@@ -19,9 +19,9 @@ chrome.storage.local.get(function(data){
 	$('#chat').load("../modules/chat.html",function(){
 		chatInit();
 	})
-	var statusUpdate = setInterval(function(){
-		chrome.runtime.sendMessage({socketEvent:"getUsers"})
-	}, 5000)
+	// var statusUpdate = setInterval(function(){
+	// 	chrome.runtime.sendMessage({socketEvent:"getUsers"})
+	// }, 5000)
 	socket = io(USER.serverURL)
 	establishRTCConnection(USER.serverURL)
 })
@@ -54,6 +54,10 @@ chrome.runtime.onMessage.addListener(function(message){
 		if(!nameInList && message.username != USER.username)
 			$('#audienceList').append("<option id='"+message.username+"'>"+message.username + " - "+message.msg+"</option>")
 		}
+	}
+	if(message.heartbeat){
+		console.log(message.data)
+		fillUsers(message.data)
 	}
 	if(message.restartAsAudience){
 		window.close()
@@ -153,6 +157,7 @@ function loadEventHandlers(){
 			connection.leave();
 			USER.isBroadcasting = false;
 			setBroadcastButton()
+			sync()
 		}
 		else {
 			if(connection.waitingForLocalMedia){
@@ -161,6 +166,7 @@ function loadEventHandlers(){
 						USER.isBroadcasting = true;
 						relay({type:"startBroadcast"})
 						setBroadcastButton()
+						sync()
 					})
 					
 				})
@@ -169,20 +175,20 @@ function loadEventHandlers(){
 					USER.isBroadcasting = true;
 					relay({type:"startBroadcast"})
 					setBroadcastButton()
+					sync()
 				})
 			}
 		}
 		
-		sync()
 	})
 	$('#addGuide').click(function(){
 		var username = $('#audienceList').children(":selected").attr("id")
 		chrome.runtime.sendMessage({socketEvent: "addGuide", data: {username:username}})
 	})
-	$('#swapGuide').click(function(){
-		var username = $('#audienceList').children(":selected").attr("id")
-		chrome.runtime.sendMessage({socketEvent: "swapGuide", data: {username:username}})
-	})
+	// $('#swapGuide').click(function(){
+	// 	var username = $('#audienceList').children(":selected").attr("id")
+	// 	chrome.runtime.sendMessage({socketEvent: "swapGuide", data: {username:username}})
+	// })
 
 }
 function fillPerformances(){
@@ -215,16 +221,22 @@ function fillActions(){
 		}
 	}
 }
-function fillUsers(users){
+function fillUsers(audienceObj){
+	let users = Object.keys(audienceObj);
+	console.log(audienceObj)
+	let focusId;
+	console.log($(':focus > option'))
+	if($(':focus > option')[0]){
+		focusId = $(':focus > option').attr('id')
+		console.log(focusId)
+	}
+	$('#audienceList').empty();
 	for (var i = 0; i < users.length; i++) {
 		if($("#audienceList #"+users[i]).length > 0 || users[i] == USER.username){continue}
-		$('#audienceList').append("<option id='"+users[i]+"'>"+users[i]+"</option>")
+		$('#audienceList').append(`<option id='${users[i]}' socket='${audienceObj[users[i]].id}'>${users[i]} - ${audienceObj[users[i]].status}</option>`)
 	}
-	$('#audienceList option').each(function(){
-		if(!users.includes($(this).attr("id"))){
-			$(this).remove()
-		}
-	})
+	if(focusId && $($("#audienceList #"+focusId).length > 0)){$("#audienceList #"+focusId).prop('selected', true)};
+
 }
 
 function exportPerformance(){
@@ -309,10 +321,12 @@ function establishRTCConnection(socketURL){
 	  video: false,
 	  oneway: true
 	}
+	connection.mediaConstraints.video = false
 	connection.sdpConstraints.mandatory = {
 	  OfferToReceiveAudio: false,
 	  OfferToReceiveVideo: false
 	};
+    
 	connection.iceServers = [{
 	'urls': [
 		'stun:stun.l.google.com:19302',
