@@ -1,1 +1,1 @@
-https://hitchhiker.glitch.me/
+https://hitchhiker-server.herokuapp.com/
