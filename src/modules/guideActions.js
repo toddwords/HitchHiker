@@ -118,14 +118,25 @@ function bindGuideActions(){
 			$('#inviteLobby').prop('disabled', false).text("Send Invite to Lobby")
 		},10000)
 	})
+	$('#createInviteLink').click(function(){
+		let inviteLink = `https://hitchhiker.glitch.me/joinRoom?room=${USER.room}&guide=${USER.username}`
+		$('#social').append(`<input id='inviteLink' value='${inviteLink}' />`)
+		$('#inviteLink').select()
+	})
 	// $('#runFunction').click(function(){
 	// 	runFunction($('#runFunc').val().trim())
 	// 	save({fn:"runFunction", params:[$('#runFunc').val().trim()]})
 	// })
 	$('#recordActions').prop("checked", USER.isRecording)
+	if(USER.isRecording){$('#actions').css("background-color", "rgba(230,160,160,0.1)")}
 	$('#recordActions').change(function(){
 		USER.isRecording = $(this).prop("checked")
 		chrome.storage.local.set({isRecording:$(this).prop("checked")})
+		if(USER.isRecording){
+			$('#actions').css("background-color", "rgba(245,160,160,0.7)")
+		} else {
+			$('#actions').css("background-color", "")
+		}
 	})
 
 

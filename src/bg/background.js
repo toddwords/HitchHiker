@@ -30,6 +30,17 @@ chrome.storage.local.get(function(syncData){
       });
       
     })
+chrome.tabs.query({},function(tabs){
+  for(let i=0; i<tabs.length; i++){
+    if(tabs[i].url.includes("hitchhiker.glitch.me/joinRoom")){
+      console.log(tabs[i].id)
+      chrome.tabs.reload(tabs[i].id)
+      setTimeout(function(){chrome.tabs.update(tabs[i].id, {highlighted:true})},2000)
+      
+      console.log("success")
+    }
+  }
+})
 chrome.storage.onChanged.addListener(function(){
   chrome.storage.local.get(function(data){
     USER = data;
@@ -68,9 +79,9 @@ chrome.extension.onMessage.addListener(
     if(message.isGuide){
       sendResponse({guide:USER.role == "guide", id:sender.tab.id})
     }
-    if(message.roomJoined){
-      onJoinRoom()
-    }
+    // if(message.roomJoined){
+    //   onJoinRoom()
+    // }
     if(message.newPageClient){
       newPage(message.newPageClient)
     }
@@ -102,6 +113,13 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       // chrome.tabs.executeScript(USER.performanceTab,{file:'src/user_created/'+USER.room+'.js'})
     }
 });
+//refresh for all when guide refreshes
+chrome.webNavigation.onCommitted.addListener(function(details){
+  if(details.transitionType == "reload" && USER.role == "guide" && details.url.indexOf('http') >= 0 && details.tabId == USER.performanceTab){
+    console.log(details)
+    socket.emit('newPage', {url:details.url})
+  }
+})
 
 chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
   if(tabId == USER.performanceTab){
@@ -113,14 +131,25 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
 // var socket = io('https://hitchhiker.glitch.me/')
 //PRODUCTION SERVER
 // var socket = io("https://hitchhiker-server.herokuapp.com/")
-
-connectToServer();
+chrome.runtime.onConnect.addListener(function (externalPort) {
+  console.log(USER)
+  if(USER.room == "lobby" || !USER.room ){
+    connectToServer()
+    console.log("connecting")
+  }
+  externalPort.onDisconnect.addListener(function () {
+    if(USER.room == "lobby" || !USER.room ){
+      socket.disconnect(true);
+    }
+  })
+})
+// connectToServer();
 function connectToServer(){
-  // var serverURL = $.ajax({
-  //                   url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentServer.txt",
-  //                   async: false
-  //                }).responseText;
-  var serverURL = "https://hitchhiker.glitch.me/"
+  var serverURL = $.ajax({
+                    url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/currentServer.txt",
+                    async: false
+                 }).responseText.trim();
+  // var serverURL = "https://hitchhiker.glitch.me/"
   console.log(serverURL)
   socket = io(serverURL)
   chrome.storage.local.set({"serverURL":serverURL});
@@ -190,8 +219,18 @@ function connectToServer(){
     if(data.joinRoomSuccess){
       USER.room = data.room
       sync()
+      onJoinRoom();
     }
-      chrome.runtime.sendMessage(data)
+    if(data.error){
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        var currTab = tabs[0];
+        if (currTab) { // Sanity check
+          chrome.tabs.sendMessage(currTab.id, data)
+        }
+      });
+    }
+    console.log(data)
+    chrome.runtime.sendMessage(data)
   })
   socket.on('status', function(data){
     console.log("status received")

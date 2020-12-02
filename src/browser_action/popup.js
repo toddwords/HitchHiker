@@ -1,4 +1,5 @@
 var USER;
+var port = chrome.runtime.connect()
 chrome.storage.local.get(function(syncData){
 	USER = syncData
 	console.log(USER)
@@ -65,12 +66,6 @@ function init(){
 		chatInit()
 	})
 	//check for current performance
- 	$.ajax({
-        url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/status.txt",
-        success: function(data){if(data.length > 0){
-
-        }}
-    });
 	if(!USER.room){
 		$.ajax({
 	        url: "https://raw.githubusercontent.com/toddwords/HitchHiker/master/status.txt",
@@ -159,7 +154,7 @@ function joinRoom(room){
 	chrome.storage.local.set({room:room})
 	toServer("status", {msg:USER.username +" has joined"})
 	afterJoinRoom()
-	chrome.runtime.sendMessage({roomJoined:true})
+	// chrome.runtime.sendMessage({roomJoined:true})
 }
 
 function showGuideTools(){
@@ -183,11 +178,11 @@ function afterJoinRoom(){
 		showGuideTools()
 		$('#reset').text("Close Room")
 	}
-	setTimeout(function(){
-		if(!USER.performanceTab){
-			chrome.runtime.sendMessage({createPerformanceTab:true})
-		}
-	},200)
+	// setTimeout(function(){
+	// 	if(!USER.performanceTab){
+	// 		chrome.runtime.sendMessage({createPerformanceTab:true})
+	// 	}
+	// },200)
 
 	
 }

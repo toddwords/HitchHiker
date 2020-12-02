@@ -12,17 +12,36 @@ var USER;
 var drawingCanvas;
 var urlList;
 var multiMouseToggle = false;
-setTimeout(siteSpecific, 3000);
+
 chrome.storage.local.get(function(data){
 	USER = data;
 	console.log(USER.performances[USER.currentPerformance].urlList)
 	urlList = USER.performances[USER.currentPerformance].urlList;
+	if(checkWebAddress("hitchhiker") && checkWebAddress("join")){
+		if(!USER.username){USER.username = prompt("What username would you like to go by when using HitchHiker?"); sync()}
+		let openSocketConnection = chrome.runtime.connect()
+		$('#installDiv').hide()
+		$('#joinRoomDiv').show()
+		$('#joinHitchHikerRoom').click(function(){
+			console.log("join button clicked")
+			console.log($(this).attr("room"))
+			chrome.storage.local.set({role:"audience"})
+			toServer("joinRoom", {room:$(this).attr("room"), username:USER.username, role:"audience"})
+		})
+	}
+
 	chrome.runtime.sendMessage({isGuide:"ask"}, function(answer){
 		guide = answer.guide;
 		if(answer.id == USER.performanceTab){
 			$('title').text("[HitchHiker] "+ $('title').text())
 		}
 	})
+	if(USER.room && USER.room !== "lobby"){
+		bindEvents();
+		setTimeout(siteSpecific, 3000);
+	}
+
+	
 })
 chrome.storage.onChanged.addListener(function(){
 	chrome.storage.local.get(function(data){
@@ -31,6 +50,10 @@ chrome.storage.onChanged.addListener(function(){
 })
 
 chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
+		if(message.error && message.error.includes("no room by that name")){
+			alert("This room is currently unavailable")
+			console.log(message.error)
+		}
 		if(message.changeText){
 			changeText(message.changeText)
 		}
@@ -128,94 +151,98 @@ chrome.runtime.onMessage.addListener(function(message,sender, sendResponse){
 			chrome.runtime.sendMessage({socketEvent:"status", data:{msg:message.type + " running"}})
 		}
 })
-$('*').click(function(e){
-	if(graffiti && (guide||groupEdit)){
-		var allowClick = true;
-		console.log(e)
-		if(currentEl !== e.target){
-			allowClick = false;
-			relay({type:"removeEditBorder", elPath:elPath})
-			currentEl = e.target
-			currentText = ""
-			contentChanges = [];
-			originalText = e.target.textContent
-			elType = e.target.localName
-			elPath = $(currentEl).getPath()
+
+
+function bindEvents(){
+	$('*').click(function(e){
+		if(graffiti && (guide||groupEdit)){
+			var allowClick = true;
+			console.log(e)
+			if(currentEl !== e.target){
+				allowClick = false;
+				relay({type:"removeEditBorder", elPath:elPath})
+				currentEl = e.target
+				currentText = ""
+				contentChanges = [];
+				originalText = e.target.textContent
+				elType = e.target.localName
+				elPath = $(currentEl).getPath()
+				console.log(currentEl)
+				console.log($(currentEl).getPath())
+		
+			}
+			relay({"type": "click", "x":e.pageX, "y":e.pageY, "elPath":elPath})
+			return allowClick
+		}
+
+	})
+
+	$(document).keydown(function(e){
+		if(e.shiftKey && e.key==" "){
+
+			toggleChatInput();
+			console.log("togglingChat")
+		}
+		if(guide){
+			if(e.ctrlKey && e.which == 37){
+				prevWebsite()
+			}
+			else if(e.ctrlKey && e.which == 39){
+				nextWebsite()
+			}
+			else if(e.ctrlKey && e.which == 40){
+				addWebsite()
+			}
+		}
+		if(graffiti && (guide||groupEdit) && $('#chatInput').length < 1){
 			console.log(currentEl)
-			console.log($(currentEl).getPath())
-	
-		}
-		relay({"type": "click", "x":e.pageX, "y":e.pageY, "elPath":elPath})
-		return allowClick
-	}
+			e.preventDefault()
+			// if(e.ctrlKey && e.which == 86){
+			// 	contentChanges.push($(currentEl).text())
+			// 	navigator.clipboard.readText().then(clipText => currentEl.innerText = currentText = clipText);
+			// }
+			if(currentEl && e.ctrlKey && e.which == 90){
+				if(contentChanges.length > 0){
+					currentText = contentChanges.pop()
+					$(currentEl).text(currentText);
+					relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})
+				}
 
-})
 
-$(document).keydown(function(e){
-	if(e.shiftKey && e.key==" "){
-
-		toggleChatInput();
-		console.log("togglingChat")
-	}
-	if(guide){
-		if(e.ctrlKey && e.which == 37){
-			prevWebsite()
-		}
-		else if(e.ctrlKey && e.which == 39){
-			nextWebsite()
-		}
-		else if(e.ctrlKey && e.which == 40){
-			addWebsite()
-		}
-	}
-	if(graffiti && (guide||groupEdit) && $('#chatInput').length < 1){
-		console.log(currentEl)
-		e.preventDefault()
-		// if(e.ctrlKey && e.which == 86){
-		// 	contentChanges.push($(currentEl).text())
-		// 	navigator.clipboard.readText().then(clipText => currentEl.innerText = currentText = clipText);
-		// }
-		if(currentEl && e.ctrlKey && e.which == 90){
-			if(contentChanges.length > 0){
-				currentText = contentChanges.pop()
+			}
+			// else if(e.ctrlKey){
+			// 	return true
+			// }
+			else if(currentEl && e.key.length == 1){
+				contentChanges.push($(currentEl).text())
+				currentText += e.key
 				$(currentEl).text(currentText);
 				relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})
 			}
-
-
+			else if(currentEl && e.which == 8){
+				contentChanges.push($(currentEl).text())
+				currentText = currentText.slice(0,-1)
+				$(currentEl).text(currentText);
+				relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})
+			}
+			else if(currentEl && e.which == 13){
+				$(currentEl).removeClass("beingEdited")
+				relay({type:"removeEditBorder", elPath:elPath})
+				currentEl = false;
+			}
+			
+			return false
 		}
-		// else if(e.ctrlKey){
-		// 	return true
-		// }
-		else if(currentEl && e.key.length == 1){
-			contentChanges.push($(currentEl).text())
-			currentText += e.key
-			$(currentEl).text(currentText);
-			relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})
+	})
+	$(window).scroll(function(){
+		if(USER.scrollSync && guide){ 
+			scrollAmt = $(window).scrollTop()
+			console.log(scrollAmt)
+			relay({type:"scrollSync", scroll:scrollAmt})
+			console.log("sending scroll")
 		}
-		else if(currentEl && e.which == 8){
-			contentChanges.push($(currentEl).text())
-			currentText = currentText.slice(0,-1)
-			$(currentEl).text(currentText);
-			relay({type:"graffiti", elPath:elPath, originalText:originalText, elType:elType, currentText:currentText})
-		}
-		else if(currentEl && e.which == 13){
-			$(currentEl).removeClass("beingEdited")
-			relay({type:"removeEditBorder", elPath:elPath})
-			currentEl = false;
-		}
-		
-		return false
-	}
-})
-$(window).scroll(function(){
-	if(USER.scrollSync && guide){ 
-		scrollAmt = $(window).scrollTop()
-		console.log(scrollAmt)
-		relay({type:"scrollSync", scroll:scrollAmt})
-		console.log("sending scroll")
-	}
-})
+	})
+}
 
 function changeText(str){
 	$('h1,h2,h3:not(:has(img)),h4,h5,h6,span:not(:has(*)),p,a:not(:has(img)),div:not(:has(*)),li:not(:has(*)),option,strong,b,em').not("#replStart").text(str)
@@ -445,7 +472,9 @@ function relay(obj){
 function sync(){
 	chrome.storage.local.set(USER)
 }
-
+function toServer(eName, obj={}){
+	chrome.runtime.sendMessage({socketEvent: eName, data: obj })
+}
 function randRange(min,max){
 	return Math.floor(Math.random()*(max-min) + min)
 }
