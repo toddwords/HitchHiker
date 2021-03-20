@@ -75,6 +75,15 @@
 	width:16px;
 }
 
+#hh-video {
+	position: fixed;
+	width: 32vw;
+	height: 18vw;
+	top:0;
+	right:0;
+
+}
+
 .animate {
   animation-iteration-count: infinite;
   animation-direction: alternate;

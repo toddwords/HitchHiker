@@ -18,11 +18,11 @@ chrome.storage.local.get(function(data){
 	console.log(USER.performances[USER.currentPerformance].urlList)
 	urlList = USER.performances[USER.currentPerformance].urlList;
 	if(checkWebAddress("hitchhiker") && checkWebAddress("join")){
-		if(!USER.username){USER.username = prompt("What username would you like to go by when using HitchHiker?"); sync()}
-		let openSocketConnection = chrome.runtime.connect()
 		$('#installDiv').hide()
 		$('#joinRoomDiv').show()
 		$('#joinHitchHikerRoom').click(function(){
+			if(!USER.username){USER.username = prompt("What username would you like to go by when using HitchHiker?"); sync()}
+			let openSocketConnection = chrome.runtime.connect()
 			console.log("join button clicked")
 			console.log($(this).attr("room"))
 			chrome.storage.local.set({role:"audience"})
@@ -36,9 +36,12 @@ chrome.storage.local.get(function(data){
 			$('title').text("[HitchHiker] "+ $('title').text())
 		}
 	})
+	console.log(USER)
 	if(USER.room && USER.room !== "lobby"){
 		bindEvents();
 		setTimeout(siteSpecific, 3000);
+		//video test
+
 	}
 
 	
@@ -469,8 +472,8 @@ function speakText(str){
 function relay(obj){
 	chrome.runtime.sendMessage({socketEvent: "guideEvent", data: obj })
 }
-function sync(){
-	chrome.storage.local.set(USER)
+function sync(callback=function(){}){
+	chrome.storage.local.set(USER, callback)
 }
 function toServer(eName, obj={}){
 	chrome.runtime.sendMessage({socketEvent: eName, data: obj })

@@ -50,6 +50,13 @@ function bindGuideActions(){
 		relay({type:"changeImages", params:[$('#changeImages input').val()]})
 		save({fn:"changeImages", params:[$('#changeImages input').val()]})
 	})
+	$('#openPop').click(function(){
+		relay({type:"openPopup", url:$('#openPopup input').val()})
+		save({fn:"openPopup", params:[$('#openPopup input').val()]})
+	})
+	$('#closePop').click(function(){
+		saveRelay({type:"closeLastPopup"})
+	})
 	$('#edit button').click(function(){
 		editOn()
 		save({fn:"editOn", params:[]})
@@ -145,7 +152,9 @@ function changeTxt(text){
 	relay({type:"changeText", "text": text})
 	$('#changeText input').val("")
 }
-
+function openPopup(url){
+	relay({type:"openPopup", url:url})
+}
 
 function editOn(){
 	relay({type:"graffitiToggle"})
@@ -240,9 +249,17 @@ function addWebsite(){
 }
 
 function sendAction(obj){
-	if(!obj.params) obj.params = []
+	if(!obj.params){obj.params = []}
 	relay(obj)
 	save(obj)
+}
+
+function saveRelay(obj){
+	let data = obj;
+	relay(obj);
+	obj.fn = "relay";
+	obj.params = [data];
+	save(obj);
 }
 
 function save(obj){

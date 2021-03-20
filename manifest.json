@@ -1,6 +1,6 @@
 {
   "name": "HitchHiker",
-  "version": "0.9.8",
+  "version": "0.9.10",
   "manifest_version": 2,
   "description": "A chrome extension for collaboratively surfing the web with others",
   "homepage_url": "https://github.com/toddwords/HitchHiker",

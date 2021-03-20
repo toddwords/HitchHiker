@@ -178,11 +178,11 @@ function afterJoinRoom(){
 		showGuideTools()
 		$('#reset').text("Close Room")
 	}
-	// setTimeout(function(){
-	// 	if(!USER.performanceTab){
-	// 		chrome.runtime.sendMessage({createPerformanceTab:true})
-	// 	}
-	// },200)
+	setTimeout(function(){
+		if(!USER.performanceTab){
+			chrome.runtime.sendMessage({createPerformanceTab:true})
+		}
+	},200)
 
 	
 }
@@ -213,8 +213,8 @@ function reset(){
 	}
 }
 
-function sync(){
-	chrome.storage.local.set(USER)
+function sync(callback=function(){}){
+	chrome.storage.local.set(USER, callback)
 }
 
 function relay(obj){

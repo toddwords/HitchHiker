@@ -15,6 +15,16 @@ chrome.storage.local.get(function(data){
 	loadEventHandlers()
 	$('#actions').load("../modules/guideActions.html",function(){
 		bindGuideActions();
+		$('#actions').append("<br><button id='closeRoom'>Close Room</button>")
+		$('#closeRoom').click(function(){
+			if(confirm("Are you sure you want to close this room? This will return all audience members to the lobby.")){
+				USER.role = false;
+				USER.room = false;
+				toServer("leaveRoom", USER)
+				sync()
+				setTimeout(function(){window.close()},500)
+			}
+		})
 	})
 	$('#chat').load("../modules/chat.html",function(){
 		chatInit();
@@ -120,25 +130,29 @@ function loadEventHandlers(){
 		var action = USER.performances[USER.currentPerformance].actions[$('#actionList')[0].selectedIndex]
 		console.log(action)
 		console.log(window[action.fn])
-		if(typeof window[action.fn] == "function"){
+		if(typeof window[action.fn] == "function" && action.params){
 			window[action.fn].apply(null,action.params)
 		}
 		else {
-			action.type = action.fn
+			// action.type = action.fn
 			relay(action)
 		}
 		var index = $('#actionList')[0].selectedIndex + 1;
-		setTimeout(function(){$('#actionList').focus(); $('#actionList')[0].selectedIndex = index}, 200);
+		setTimeout(function(){$('#actionList').focus(); $('#actionList')[0].selectedIndex = index}, 100);
 	})
 	$('#actionUp').click(function(){
+		let index = $('#actionList')[0].selectedIndex
 		arraySwap(USER.performances[USER.currentPerformance].actions, $('#actionList')[0].selectedIndex, $('#actionList')[0].selectedIndex - 1)
 		sync()
-		$('#actionList').focus()
+		setTimeout(function(){$('#actionList').focus(); $('#actionList')[0].selectedIndex = index - 1}, 50);
+
+		
 	})
 	$('#actionDown').click(function(){
+		let index = $('#actionList')[0].selectedIndex
 		arraySwap(USER.performances[USER.currentPerformance].actions, $('#actionList')[0].selectedIndex, $('#actionList')[0].selectedIndex + 1)
 		sync()
-		$('#actionList').focus()
+		setTimeout(function(){$('#actionList').focus(); $('#actionList')[0].selectedIndex = index + 1}, 50);
 	})
 	$('#actionDel').click(function(){
 		USER.performances[USER.currentPerformance].actions.splice($('#actionList')[0].selectedIndex, 1)
@@ -189,6 +203,19 @@ function loadEventHandlers(){
 	// 	var username = $('#audienceList').children(":selected").attr("id")
 	// 	chrome.runtime.sendMessage({socketEvent: "swapGuide", data: {username:username}})
 	// })
+	$('#videoOpen').click(function(){
+		chrome.runtime.sendMessage({openVideoPopup: true})
+		setTimeout(function(){relay({type:"openVideoPopup"})},3000);
+	})
+	$('#videoMinimize').click(function(){
+		if(USER.videoVisible){
+			$(this).text("Show Video Popup")
+		}
+		else {
+			$(this).text("Minimize Video Popup")
+		}
+		relay({type:"toggleVideoPopup"})
+	})
 
 }
 function fillPerformances(){
@@ -214,8 +241,8 @@ function fillActions(){
 	$("#actionList").empty()
 	for (var i = 0; i < actions.length; i++) {
 		if(actions[i]){
-			var actionString = actions[i].fn
-			if(typeof actions[i].params[0] == "string")
+			var actionString = actions[i].fn ? actions[i].fn : actions[i].type
+			if(actions[i].params && typeof actions[i].params[0] == "string")
 				actionString += ": "+actions[i].params[0]
 			$('#actionList').append("<option>"+actionString+"</option>")
 		}
@@ -254,10 +281,11 @@ function download(content, fileName) {
 
 function arraySwap(arr, index1, index2){
 	if(index2 >= arr.length){
-		arr.pop().unshift()
+		arr.unshift(arr.pop())
+		
 	}
 	else if(index2 < 0){
-		arr.shift().push()
+		arr.push(arr.shift())
 	}
 	else{
 		[arr[index1], arr[index2]] = [arr[index2], arr[index1]];
@@ -304,8 +332,8 @@ function readFileContent(file) {
     reader.readAsText(file)
   })
 }
-function sync(){
-	chrome.storage.local.set(USER)
+function sync(callback=function(){}){
+	chrome.storage.local.set(USER, callback)
 }
 
 function relay(obj){

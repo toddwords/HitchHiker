@@ -2,12 +2,12 @@ var USER;
 var audioTracks = [];
 let socket;
 let connection;
-
+let popups = [];
 chrome.storage.local.get(function(syncData){
       if(!syncData.id){
         chrome.storage.local.set({"id":new Date().getTime(), "performances": {"First Performance":{"urlList":[], "actions":[]}}, counter:-1, currentPerformance:"First Performance", "username":false, voices:[], currentVoice: "Google UK English Male" },function(){console.log("initialized")})
       }
-      chrome.storage.local.set({"room":false, "role":false, isBroadcasting:false,  counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false, isRecording:false})
+      chrome.storage.local.set({"room":false, "role":false, isBroadcasting:false,  counter:-1, "color":[Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75,Math.floor(Math.random() * 180)+75],messages:[], performanceTab: false, scrollSync:false, speakChat:false, isRecording:false, videoPopup: false, videoVisible:false})
       let voiceList = [];
       chrome.tts.getVoices(
         function(voices) {
@@ -61,6 +61,7 @@ chrome.extension.onMessage.addListener(
         // }
         if(message.socketEvent == "leaveRoom"){
           connection.leave()
+          stopAudio();
         }
       socket.emit(message.socketEvent, message.data)
   		// if(message.socketEvent == 'newMsg'){
@@ -95,6 +96,9 @@ chrome.extension.onMessage.addListener(
     }
     if(message.createPerformanceTab){
       createNewPerformanceTab(()=>{socket.emit("getCurrentPage")}, false)
+    }
+    if(message.openVideoPopup){
+      openVideoPopup();
     }
 
   });
@@ -134,8 +138,10 @@ chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
 chrome.runtime.onConnect.addListener(function (externalPort) {
   console.log(USER)
   if(USER.room == "lobby" || !USER.room ){
-    connectToServer()
-    console.log("connecting")
+    if(!socket || !socket.connected){
+      connectToServer()
+      console.log("connecting")
+    }
   }
   externalPort.onDisconnect.addListener(function () {
     if(USER.room == "lobby" || !USER.room ){
@@ -151,7 +157,7 @@ function connectToServer(){
                  }).responseText.trim();
   // var serverURL = "https://hitchhiker.glitch.me/"
   console.log(serverURL)
-  socket = io(serverURL)
+  socket = io(serverURL, {transports: ['websocket']})
   chrome.storage.local.set({"serverURL":serverURL});
   establishRTCConnection(serverURL)
   // socket = io("https://hitchhiker-server.herokuapp.com/")
@@ -182,15 +188,13 @@ function connectToServer(){
       return false;
     }
     if(data.type == "stopAudio"){
-      for (var i = 0; i < audioTracks.length; i++) {
-        audioTracks[i].pause();
-      }
+      stopAudio();
       return false
     }
     if(data.type == "deleteRecent"){
       if(audioTracks.length > 0){
-        var stopAudio = audioTracks.pop()
-        stopAudio.pause()
+        var lastAudio = audioTracks.pop()
+        lastAudio.pause()
       }
       return false
     }
@@ -211,6 +215,26 @@ function connectToServer(){
     if(data.type == "setVoice"){
       chrome.storage.local.set({"currentVoice": data.params[0]})
 			USER.currentVoice = data.params[0]
+    }
+    if(data.type == "openPopup"){
+        openNewWindow(data.url);
+        return false
+    }
+    if(data.type == "closeLastPopup"){
+      chrome.windows.remove(popups.pop());
+      return false;
+    }
+    if(data.type == "openVideoPopup"){
+      console.log("video open message received")
+      console.log(USER.videoPopup)
+      if(!USER.videoPopup){
+        openVideoPopup()
+      }
+      return false
+    }
+    if(data.type == "toggleVideoPopup"){
+      toggleVideoPopup();
+      return false
     }
     messageToTab(data)
     console.log(data)
@@ -277,6 +301,7 @@ function connectToServer(){
       
   socket.on('disconnect', function(reason){
     chrome.runtime.sendMessage({disconnected:true})
+    stopAudio();
     connection.leave();
     console.log(reason)
   })
@@ -290,7 +315,7 @@ function messageToTab(data){
 }
 function newPage(newURL){
   if(!USER.performanceTab){
-    createNewPerformanceTab(updatePage)
+    createNewPerformanceTab(function(){updatePage(newURL)})
   } else {
     updatePage(newURL)
   }	
@@ -321,15 +346,37 @@ function addMsg(user, msg, color){
 function speakText(text){
   	chrome.tts.speak(text, {voiceName: USER.currentVoice, rate: 0.75})
 }
-
- function openNewWindow(newUrl, left, top, time){
-  var newTimeout = setTimeout(function(){
-    if(newUrl.slice(0,4) != "http"){newUrl = "http://"+newUrl}
-    chrome.windows.create({ url: newUrl, left:left, top:top, width:500, height:400 });
-  }, time * 1000)
-  timeouts.push(newTimeout)
+function stopAudio(){
+  for (var i = 0; i < audioTracks.length; i++) {
+    audioTracks[i].pause();
+  }
 }
-
+ function openNewWindow(newUrl, left=Math.floor(Math.random() * 600), top=Math.floor(Math.random() * 400)){
+    if(newUrl.slice(0,4) != "http"){
+        newUrl = "http://"+newUrl;
+    }
+    chrome.windows.create({ url: newUrl, left:left, top:top, width:800, height:600 }, function(win){
+      popups.push(win.id)
+    });
+}
+function openVideoPopup(){
+  chrome.windows.create({ url: chrome.runtime.getURL("src/modules/video-popup.html"), left:1000, top:0, width:800, height:600 }, function(win){
+    chrome.storage.local.set({videoPopup: win.id, videoVisible: true})
+    chrome.windows.onRemoved.addListener(function(w) {
+      if(w.id === win.id){chrome.storage.local.set({videoPopup: false, videoVisible: false})}
+    })
+  });
+}
+function toggleVideoPopup(){
+  if(USER.videoVisible){
+    chrome.windows.update(USER.videoPopup, {state: "minimized"})
+  }
+  else {
+    chrome.windows.update(USER.videoPopup, {state: "normal"})
+  }
+  USER.videoVisible = !USER.videoVisible
+  sync()
+}
 function onJoinRoom(){
   createNewPerformanceTab(function(){
     if(USER.role == "guide"){
@@ -348,10 +395,9 @@ function onJoinRoom(){
   })
 }
 
-function sync(){
-  chrome.storage.local.set(USER)
+function sync(callback=function(){}){
+	chrome.storage.local.set(USER, callback)
 }
-
 function establishRTCConnection(socketURL){
   connection = new RTCMultiConnection();
   connection.socketURL = socketURL
