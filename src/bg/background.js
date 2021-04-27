@@ -144,9 +144,12 @@ chrome.runtime.onConnect.addListener(function (externalPort) {
     }
   }
   externalPort.onDisconnect.addListener(function () {
-    if(USER.room == "lobby" || !USER.room ){
-      socket.disconnect(true);
-    }
+    setTimeout(()=>{
+      if(USER.room == "lobby" || !USER.room ){
+        socket.disconnect(true);
+      }
+    }, 2000)
+
   })
 })
 // connectToServer();
